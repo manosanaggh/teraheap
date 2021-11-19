@@ -24,6 +24,7 @@
 
 #include "gc_implementation/parallelScavenge/psYoungGen.hpp"
 #include "memory/sharedDefines.h"
+#include "oops/oopsHierarchy.hpp"
 #include "precompiled.hpp"
 #include "classfile/systemDictionary.hpp"
 #include "gc_implementation/parallelScavenge/objectStartArray.hpp"
@@ -94,7 +95,13 @@ bool PSMarkSweepDecorator::tc_policy(HeapWord *q, size_t size) {
 		&& size >= TeraCacheThreshold) || (oop(q)->is_tc_to_old());
 	
 #elif P_SD && !P_NO_TRANSFER
+#if P_ACCESSES
+	return (oop(q)->is_tera_cache()
+			&& (Universe::teraCache()->tc_get_major_gc() % 2) == 0
+			&& oop(q)->get_obj_num_accesses() < ((uint64_t)Universe::teraCache()->tc_get_major_gc() / 2));
+#else
 	return (oop(q)->is_tera_cache() || oop(q)->is_tc_to_old());
+#endif
 
 #elif P_NO_TRANSFER
 	return false;
@@ -665,7 +672,12 @@ void PSMarkSweepDecorator::compact(bool mangle_free_space ) {
 					Copy::aligned_conjoint_words(q, compaction_top, size);
 					/* Initialize mark word of the destination */
 					oop(compaction_top)->init_mark();
+#if P_ACCESSES
+					if (!oop(compaction_top)->is_tera_cache())
+						oop(compaction_top)->set_obj_state();
+#else
 					oop(compaction_top)->set_obj_state();
+#endif
 				}
 			    
 #if DEBUG_TERACACHE
@@ -688,7 +700,12 @@ void PSMarkSweepDecorator::compact(bool mangle_free_space ) {
 				        	  << "=> NEW_ADDR = "  << q  << std::endl;
 #endif
 				oop(q)->init_mark();
+#if P_ACCESSES
+				if (!oop(q)->is_tera_cache())
+					oop(q)->set_obj_state();
+#else
 				oop(q)->set_obj_state();
+#endif
 
 				/* 
 				 * Set the object state to show that this place holds a valid object
@@ -817,7 +834,14 @@ void PSMarkSweepDecorator::compact(bool mangle_free_space ) {
 			  Copy::aligned_conjoint_words(q, compaction_top, size);
 			  // Change the value of teraflag in the new location of the object
 			  oop(compaction_top)->init_mark();
-			  oop(compaction_top)->set_obj_state();
+#if P_ACCESSES
+			  if(EnableTeraCache && !oop(compaction_top)->is_tera_cache())
+				  oop(compaction_top)->set_obj_state();
+#else
+			  if(EnableTeraCache)
+				  oop(compaction_top)->set_obj_state();
+
+#endif
 		  }
 #else
 		  Copy::aligned_conjoint_words(q, compaction_top, size);

@@ -66,15 +66,23 @@ class TeraCache {
 		static uint64_t intra_ptrs_per_mgc;		   //< Total number of intra ptrs between objects in TC per MGC
 
 		static uint64_t obj_distr_size[3];         //< Object size distribution between B, KB, MB
+		
+		static int num_major_gc;	              //< Number of major gc
 
 #if NEW_FEAT
 		static std::vector<HeapWord *> _mk_dirty;  //< These objects should
 												   // make dirty their cards
 #endif
-		static long int cur_obj_group_id;	       //<We save the current object
+		static uint64_t cur_obj_group_id;	       //<We save the current object
    												   // group id for tera-marked
 												   // object to promote this id
 												   // to their reference objects
+
+		static uint64_t cur_obj_num_access;	       //<We save the current object
+   												   // number of accesses for tera-marked
+												   // object to promote their
+												   // number of accesses to
+												   // their reference objects
 
 	public:
 		// Constructor
@@ -208,11 +216,25 @@ class TeraCache {
 
 		// We save the current object group 'id' for tera-marked object to
 		// promote this 'id' to its reference objects
-		void set_cur_obj_group_id(long int id);
+		void set_cur_obj_group_id(uint64_t id);
 		
 		// Get the saved current object group id 
-		long int get_cur_obj_group_id(void);
+		uint64_t get_cur_obj_group_id(void);
 		
+		// We save the current object number of accesses 'num_access' for
+		// tera-marked object to promote these number of accesses its reference
+		// objects
+		void set_cur_obj_num_access(uint64_t num_access);
+		
+		// Get the saved current object number of accesses
+		uint64_t get_cur_obj_group_num_access(void);
+		
+		// Increase the number of major gc
+		void tc_incr_major_gc(void);
+		
+		// Get the number of major gc
+		int tc_get_major_gc(void);
+
 		// 
 		// // Validate if all the dirty cards that we found are dirty now are
 		// // clean. If one of the dirty card is still dirty then fail

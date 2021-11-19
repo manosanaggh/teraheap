@@ -145,6 +145,15 @@
 									//  should be used in combination with
 									//  P_DISTINCT 
 
+#define P_ACCESSES				0   //< Move Objects to TeraCache based on the
+									// number of accesses that they have. This
+									// policy is used in combination of P_SD and
+									// is for HetJVM 
+
+#define NUM_ACCESSES			0	//< Enable this flag when the user predefine
+									// the number of accesses for each cached
+									// object.
+
 #define P_SD_BITMAP				0	//< Bitmap to optimize the search in tree
 									//  
 
@@ -172,9 +181,10 @@
  **********************************/
 #define STATISTICS			      0  //< Enable statistics for TeraCache
 
-#define VERBOSE_TC				  1  //< Print objects in T
+#define VERBOSE_TC				  0  //< Print objects in T
 
 // TODO: This define must be removed
 #define NEW_FEAT				  1  //< Enable when you add new feature
+
 
 #endif  // _SHARE_DEFINES_H_

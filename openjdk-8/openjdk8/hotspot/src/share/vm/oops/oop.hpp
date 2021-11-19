@@ -101,14 +101,18 @@ class oopDesc {
 
 #if TERA_FLAG
   // TeraFlag word is used by the TeraCache. TeraFlag is a 64-bit word and is
-  // divided in two parts:
-  //	- high 32-bits: represent the object group id as it defined by the application
-  //	- low 32-bits: represent the state of the object
-  //  64								31									 0
-  // +------------------------------------------------------------------------+
-  // |            group id               |           object state             |
-  // +------------------------------------------------------------------------+
-  volatile int64_t _tera_flag;      //< MarkTeracache objects
+  // divided in three parts:
+  //
+  //+-------+----------------------------------------------------------------+
+  //| Bits  | Description                                                    |
+  //+-------+----------------------------------------------------------------+
+  //| 63-48 | Number of accesses to the object                               |
+  //+-------+----------------------------------------------------------------+
+  //| 32-47 | Represent the object group id as it defined by the application |
+  //+-------+----------------------------------------------------------------+
+  //| 31-0  | Represent the state of the object                              |
+  //+-------+----------------------------------------------------------------+
+  volatile uint64_t _tera_flag;      //< MarkTeracache objects
 #endif
 
   // Fast access to barrier set.  Must be initialized.
@@ -122,43 +126,45 @@ class oopDesc {
   // Mark this object that is pointed be TeraCache and is in old generation.
   // This object should be moved to TeraCache in next full GC.
   void set_tc_to_old()  { 
-	  // Get the id of the object as it has been marked by the application
-	  int id = _tera_flag >> 32;
-
-	  _tera_flag = (uint64_t) id << 32;
+	  uint64_t num_access = _tera_flag >> 48;
+	  uint64_t id = (_tera_flag >> 32) & 0xffff;
+	  uint64_t state = _tera_flag & 0xffffffff;
+	  
+	  _tera_flag = (num_access << 48);
+	  _tera_flag |= (id << 32);
 	  _tera_flag |= TERA_TO_OLD;
   }
   
   // Check if this objects is pointed by an object from TeraCache and is in old
   // generation. If yes return 'true', 'false' othersise.
   bool is_tc_to_old()  { 
-	  int state = _tera_flag & 0xffffffff;
-	  return state == TERA_TO_OLD;
+	  return (_tera_flag & 0xffffffff) == TERA_TO_OLD;
   }
 
   // Mark an object with 'id' to be moved in TeraCache.
   // TeraCache allocator uses the 'id' to locate objects with the same 'id' by
   // to the same region.
   // 'id' is defined by the application.
-  void set_tera_cache(long int id) { 
-	  _tera_flag = id << 32;
+  void set_tera_cache(uint64_t id, uint64_t num_access) { 
+	  _tera_flag = (num_access << 48);
+	  _tera_flag |= (id << 32);
 	  _tera_flag |= MOVE_TO_TERA;
   }
 
   // Check if an object is marked to be moved in TeraCache
   bool is_tera_cache() { 
-	  int state = _tera_flag & 0xffffffff;
-
-	  return state == MOVE_TO_TERA;
+	  return (_tera_flag & 0xffffffff) == MOVE_TO_TERA;
   }
 
   // Mark this object that is located in TeraCache
   void set_obj_in_tc() { 
-	  // Get the id of the object as it has been marked by the application
-	  int id = _tera_flag >> 32;
-
-	  _tera_flag = (uint64_t) id << 32;
-	  _tera_flag |= IN_TERA_CACHE; 
+	  uint64_t num_access = (_tera_flag >> 48);
+	  uint64_t id = (_tera_flag >> 32) & 0xffff;
+	  uint64_t state = _tera_flag & 0xffffffff;
+	  
+	  _tera_flag = (num_access << 48);
+	  _tera_flag |= (id << 32);
+	  _tera_flag |= IN_TERA_CACHE;
   }
 
   // Get the state of the object
@@ -173,8 +179,39 @@ class oopDesc {
   }
 
   // Get the object group id
-  int get_obj_group_id() {
-	  return _tera_flag >> 32;
+  uint64_t get_obj_group_id() {
+	  return ((_tera_flag >> 32) & 0xffff) ;
+  }
+  
+  // Get the number of accesses of the object
+  uint64_t get_obj_num_accesses() {
+	  return _tera_flag >> 48;
+  }
+  
+  // Decrease the number of accesses of the object
+  void dec_obj_num_accesses() {
+	  uint64_t num_access = _tera_flag >> 48;
+	  uint64_t id = (_tera_flag >> 32) & 0xffff;
+	  uint64_t state = _tera_flag & 0xffffffff;
+	  
+	  num_access --;
+
+	  _tera_flag = (num_access << 48);
+	  _tera_flag |= (id << 32);
+	  _tera_flag |= state;
+  }
+  
+  // Increase the number of accesses of the object
+  void inc_obj_num_accesses() {
+	  uint64_t num_access = _tera_flag >> 48;
+	  uint64_t id = (_tera_flag >> 32) & 0xffff;
+	  uint64_t state = _tera_flag & 0xffffffff;
+	  
+	  num_access ++;
+
+	  _tera_flag = (num_access << 48);
+	  _tera_flag |= (id << 32);
+	  _tera_flag |= state;
   }
 
 #endif

@@ -208,9 +208,11 @@ bool PSMarkSweep::invoke_no_policy(bool clear_all_softrefs) {
 	if (EnableTeraCache && TeraCacheStatistics)
 		Universe::teraCache()->tc_init_counters();
 
-	if (EnableTeraCache)
+	if (EnableTeraCache) {
 		// Give advise to kernel to prefetch pages for TeraCache random
 		Universe::teraCache()->tc_enable_rand();
+		Universe::teraCache()->tc_incr_major_gc();
+	}
 #endif
 
     // Recursive mark all the live objects

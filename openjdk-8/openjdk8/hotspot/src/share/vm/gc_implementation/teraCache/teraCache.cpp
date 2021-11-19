@@ -40,7 +40,9 @@ uint64_t TeraCache::obj_distr_size[3];
 std::vector<HeapWord *> TeraCache::_mk_dirty;    //< These objects should make their cards dirty
 #endif
 
-long int TeraCache::cur_obj_group_id;
+uint64_t TeraCache::cur_obj_group_id;
+uint64_t TeraCache::cur_obj_num_access;
+int TeraCache::num_major_gc;
 
 // Constructor of TeraCache
 TeraCache::TeraCache() {
@@ -79,6 +81,7 @@ TeraCache::TeraCache() {
 	}
 
 	cur_obj_group_id = 0;
+	num_major_gc = 0;
 }
 		
 void TeraCache::tc_shutdown() {
@@ -517,13 +520,35 @@ bool TeraCache::tc_obj_fit_in_region(size_t size) {
 		
 // We save the current object group 'id' for tera-marked object to
 // promote this 'id' to its reference objects
-void TeraCache::set_cur_obj_group_id(long int id) {
+void TeraCache::set_cur_obj_group_id(uint64_t id) {
 	cur_obj_group_id = id;
 }
 
 // Get the saved current object group id 
-long int TeraCache::get_cur_obj_group_id(void) {
+uint64_t TeraCache::get_cur_obj_group_id(void) {
 	return cur_obj_group_id;
+}
+		
+// We save the current object number of accesses 'num_access' for
+// tera-marked object to promote these number of accesses its reference
+// objects
+void TeraCache::set_cur_obj_num_access(uint64_t num_access) {
+	cur_obj_num_access = num_access;
+}
+
+// Get the saved current object number of accesses
+uint64_t TeraCache::get_cur_obj_group_num_access(void) {
+	return cur_obj_num_access;
+}
+		
+// Increase the number of major gc
+void TeraCache::tc_incr_major_gc() {
+	num_major_gc++;
+}
+		
+// Get the number of major gc
+int TeraCache::tc_get_major_gc() {
+	return num_major_gc;
 }
 
 #endif

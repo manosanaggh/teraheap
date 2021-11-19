@@ -27,6 +27,7 @@
 #include "classfile/vmSymbols.hpp"
 #include "utilities/macros.hpp"
 #include <cstdio>
+#include <ctime>
 #if INCLUDE_ALL_GCS
 #include "gc_implementation/g1/g1SATBCardTableModRefBS.hpp"
 #endif // INCLUDE_ALL_GCS
@@ -41,6 +42,16 @@
 #include "trace/tracing.hpp"
 #include "utilities/copy.hpp"
 #include "utilities/dtrace.hpp"
+
+#define TC_INFO \
+	time_t now = time(0); \
+	tm *ltm = localtime(&now); \
+	std::cerr << ltm->tm_mday <<"/" \
+	<< 1 + ltm->tm_mon <<"/" \
+	<< 1900 + ltm->tm_year << " " \
+	<< ltm->tm_hour << ":" \
+	<< ltm->tm_min << ":" \
+	<< ltm->tm_sec
 
 /*
  *      Implementation of class sun.misc.Unsafe
@@ -602,6 +613,9 @@ UNSAFE_END
 
 UNSAFE_ENTRY(void, Unsafe_TcMarkObject(JNIEnv *env, jobject unsafe, jobject obj))
   UnsafeWrapper("Unsafe_TcMarkObject");
+
+  if (!EnableTeraCache)
+	return;
   
   oop o = JNIHandles::resolve_non_null(obj);
   int i;
@@ -609,11 +623,14 @@ UNSAFE_ENTRY(void, Unsafe_TcMarkObject(JNIEnv *env, jobject unsafe, jobject obj)
   if (strstr(o->klass()->internal_name(), "SerializableConfiguration"))
 	return;
 
-  o->set_tera_cache(0);
+  o->set_tera_cache(0, 0);
 UNSAFE_END
 
 UNSAFE_ENTRY(void, Unsafe_TcMarkObjectWithId(JNIEnv *env, jobject unsafe, jobject obj, jlong id))
   UnsafeWrapper("Unsafe_TcMarkObjectWithId");
+
+  if (!EnableTeraCache)
+	return;
   
   oop o = JNIHandles::resolve_non_null(obj);
   int i;
@@ -621,9 +638,71 @@ UNSAFE_ENTRY(void, Unsafe_TcMarkObjectWithId(JNIEnv *env, jobject unsafe, jobjec
   if (strstr(o->klass()->internal_name(), "SerializableConfiguration"))
 	return;
 
-  o->set_tera_cache(id);
+  o->set_tera_cache(id, 0);
 UNSAFE_END
 
+UNSAFE_ENTRY(void, Unsafe_TcMarkObjectWithAccesses(JNIEnv *env, jobject unsafe, jobject obj, jlong id, jlong partId, jlong numAccess))
+  UnsafeWrapper("Unsafe_TcMarkObjectWithAccesses");
+
+  if (!EnableTeraCache)
+	return;
+  
+  static std::time_t time_now = std::time(0);
+  oop o = JNIHandles::resolve_non_null(obj);
+
+  if (strstr(o->klass()->internal_name(), "SerializableConfiguration"))
+	return;
+
+	TC_INFO << " [TC_INFO] TC_IN | RDD_ID = " << id << " | PART_ID = " << partId << std::endl;
+
+#if P_ACCESSES
+#if NUM_ACCESSES
+	o->set_tera_cache((uint64_t)id, (uint64_t)numAccess);
+#else
+	o->set_tera_cache((uint64_t)id, 0);
+#endif
+#endif
+UNSAFE_END
+
+UNSAFE_ENTRY(void, Unsafe_TcDecreaseAccess(JNIEnv *env, jobject unsafe, jobject obj, jlong id, jlong partId))
+	UnsafeWrapper("Unsafe_TcDecreaseAccess");
+
+	if (!EnableTeraCache)
+		return;
+
+	static std::time_t time_now = std::time(0);
+	oop o = JNIHandles::resolve_non_null(obj);
+
+	if (strstr(o->klass()->internal_name(), "SerializableConfiguration"))
+	return;
+
+	if (o->get_obj_num_accesses() <= 0)
+		return;
+
+	assertf(o->get_obj_group_id() == (uint64_t)id, "RDD id is not the same");
+
+	TC_INFO << " [TC_INFO] TC_GET RDD_ID = " << o->get_obj_group_id()  << " | PART_ID = " << partId  << " | NUM_ACCESSES = " << o->get_obj_num_accesses() << std::endl;
+
+	o->dec_obj_num_accesses();
+
+UNSAFE_END
+
+UNSAFE_ENTRY(void, Unsafe_TcIncreaseAccess(JNIEnv *env, jobject unsafe, jobject obj, jlong id, jlong partId))
+	UnsafeWrapper("Unsafe_TcIncreaseAccess");
+
+	if (!EnableTeraCache)
+		return;
+
+	oop o = JNIHandles::resolve_non_null(obj);
+
+	if (strstr(o->klass()->internal_name(), "SerializableConfiguration"))
+		return;
+
+	assertf(o->get_obj_group_id() == (uint64_t)id, "RDD id is not the same");
+
+	o->inc_obj_num_accesses();
+
+UNSAFE_END
 
 UNSAFE_ENTRY(jlong, Unsafe_ReallocateMemory(JNIEnv *env, jobject unsafe, jlong addr, jlong size))
   UnsafeWrapper("Unsafe_ReallocateMemory");
@@ -1623,6 +1702,11 @@ static JNINativeMethod methods_18[] = {
     {CC"tcMarkObject",       CC"("OBJ")V",               FN_PTR(Unsafe_TcMarkObject)},
 	// Mark object to be moved in TeraCache using Id
     {CC"tcMarkObjectWithId", CC"("OBJ"J)V",              FN_PTR(Unsafe_TcMarkObjectWithId)},
+	{CC"tcMarkObjectWithAccesses", CC"("OBJ"JJJ)V",      FN_PTR(Unsafe_TcMarkObjectWithAccesses)},
+	// Each time we access an rdd partition we decrease the total number of
+	// accesses
+	{CC"tcDecreaseAccess", CC"("OBJ"JJ)V",               FN_PTR(Unsafe_TcDecreaseAccess)},
+	{CC"tcIncreaseAccess", CC"("OBJ"JJ)V",               FN_PTR(Unsafe_TcIncreaseAccess)},
 
     {CC"reallocateMemory",   CC"("ADR"J)"ADR,            FN_PTR(Unsafe_ReallocateMemory)},
     {CC"freeMemory",         CC"("ADR")V",               FN_PTR(Unsafe_FreeMemory)},

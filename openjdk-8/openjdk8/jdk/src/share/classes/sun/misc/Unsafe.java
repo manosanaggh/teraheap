@@ -1153,5 +1153,31 @@ public final class Unsafe {
      * @param id id of the marking object
      */
     public native void tcMarkObjectWithId(Object o, long id);
-
+	
+	/**
+     * Mark object to be moved to TeraCache using Id and number of accesses
+	 *
+     * @param o object/array to update tera mark word
+     * @param id id of the marking object
+     * @param numAccess total number of acccesses to this rdd
+     */
+    public native void tcMarkObjectWithAccesses(Object o, long id, long partId, long numAccess);
+	
+	/**
+     * Each time we access an rdd partition we decrease the total number of
+	 * accesses.
+	 *
+     * @param o object/array to decrease its access counter
+     * @param id id of the marking object
+     */
+    public native void tcDecreaseAccess(Object o, long id, long partId);
+	
+	/**
+     * Each time we access an rdd partition we increase the total number of
+	 * accesses.
+	 *
+     * @param o object/array to increase its access counter
+     * @param id id of the marking object
+     */
+    public native void tcIncreaseAccess(Object o, long id, long partId);
 }
