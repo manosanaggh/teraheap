@@ -330,7 +330,7 @@ do
 			if [ $SERDES ]
 			then
 				# Parse cpu and disk statistics results
-				~/system_util/extract-data.sh -r ${RUN_DIR} -d ${DEV_SHFL}
+				~/system_util/extract-data.sh -r ${RUN_DIR} -d ${DEV_SHFL} -d ${DEV_FMAP}
 			elif [ $TC ]
 			then
 				if [ $FASTMAP ]
@@ -341,6 +341,9 @@ do
 					~/system_util/extract-data.sh -r ${RUN_DIR} -d ${DEV_SHFL}
 				fi
 			fi
+
+			# Copy the new configuration file to the result directory
+			cp ./conf.sh ${RUN_DIR}/
 
 			if [ $HIGH_BENCH ]
 			then
