@@ -119,6 +119,8 @@ int os::create_file_for_heap(const char* dir) {
     if (strcmp(dir, "/dev/nvme0n1") == 0 || 
         strcmp(dir, "/dev/nvme1n1") == 0 || 
         strcmp(dir, "/dev/dmap/dmap1") == 0 || 
+        strcmp(dir, "/dev/pmem0") == 0 || 
+        strcmp(dir, "/dev/ram0") == 0 || 
         strcmp(dir, "/dev/sdb") == 0 || 
         strcmp(dir, "/dev/sdd") == 0 || 
         strcmp(dir, "/dev/zero") == 0)
