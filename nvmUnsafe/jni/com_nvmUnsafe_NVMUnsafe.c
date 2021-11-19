@@ -97,6 +97,7 @@ Java_com_nvmUnsafe_NVMUnsafe_nvmInitialPool (JNIEnv *env, jobject nvmUnsafe,
         return;
     }
 
+
     _vmp = vmem_create(nativePath, pool_size);
 
     if (_vmp == NULL)
@@ -130,6 +131,11 @@ Java_com_nvmUnsafe_NVMUnsafe_nvmAllocateMemory (JNIEnv *env, jobject nvmUnsafe,
 
     /* Allocate memory */
     allocationAddr = vmem_malloc(_vmp, size);
+
+	if (allocationAddr == NULL) {
+        perror("Cannot allocate memory");
+		exit(1);
+	}
 
     return addr_to_java(allocationAddr);
 }
