@@ -17,7 +17,7 @@ CC			  = gcc
 JAVAC		  = javac
 JAVAH		  = javah
 
-JAVA_PATH	  = /usr/lib/jvm/java-1.8.0-openjdk
+JAVA_PATH	  = /usr/lib/jvm/java-1.7.0-openjdk
 CLASS_PATH    = com.nvmUnsafe
 LIB_PATH  	  = libpmemmalloc/lib
 CLASSES       = classes
