@@ -50,7 +50,7 @@ retValue=$?
 message="Build NVMUnsafe JAR file" 
 check ${retValue} "${message}"
 
-sudo make install
+make install
 
 # Check if the command executed succesfully
 retValue=$?
