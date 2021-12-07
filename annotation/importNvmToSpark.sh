@@ -30,10 +30,10 @@ check () {
     fi
 }
 
-make clean >/dev/null 2>&1
-make distclean >/dev/null 2>&1
-sudo make uninstall >/dev/null 2>&1
-make all >/dev/null 2>&1
+make clean 
+make distclean 
+make uninstall 
+make all 
 
 # Check if the command executed succesfully
 retValue=$?
@@ -47,7 +47,7 @@ retValue=$?
 message="Build TeraCache JAR file" 
 check ${retValue} "${message}"
 
-sudo make install >/dev/null 2>&1
+make install
 
 # Check if the command executed succesfully
 retValue=$?
@@ -61,7 +61,7 @@ mvn install:install-file \
     -DartifactId=teraCache \
     -Dversion=1.0 \
     -Dpackaging=jar \
-    -DpomFile=/opt/spark/spark-2.3.0-kolokasis/pom.xml >/dev/null 2>&1
+    -DpomFile=/opt/spark/pom.xml 
 
 # Check if the command executed succesfully
 retValue=$?

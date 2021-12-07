@@ -17,7 +17,8 @@ CC			  = g++
 JAVAC		  = javac
 JAVAH		  = javah
 
-JAVA_PATH	  = /usr/lib/jvm/java-8-kolokasis/build/linux-x86_64-normal-server-release/jdk
+#JAVA_PATH	  = /usr/lib/jvm/java-8-kolokasis/build/linux-x86_64-normal-server-release/jdk
+JAVA_PATH	  = /sparkPersistentMemory/openjdk-8/openjdk8/build/linux-x86_64-normal-server-release/jdk
 CLASS_PATH    = com.teraCache
 CLASSES       = classes
 
