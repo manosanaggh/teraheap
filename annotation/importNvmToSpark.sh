@@ -61,7 +61,7 @@ mvn install:install-file \
     -DartifactId=teraCache \
     -Dversion=1.0 \
     -Dpackaging=jar \
-    -DpomFile=/opt/spark/pom.xml 
+    -DpomFile=/root/spark/pom.xml 
 
 # Check if the command executed succesfully
 retValue=$?
