@@ -6,7 +6,7 @@
 #
 # @Author:   Iacovos G. Kolokasis
 # @Version:  13-10-2018
-# @Version:  21-06-2020
+# @Version:  22-10-2021
 # @email:    kolokasis@ics.forth.gr
 #
 # This script install all the needed libraries for
@@ -23,31 +23,34 @@
 check () {
     if [ $1 -ne 0 ]
     then
+        echo
         echo -e "  $2 \e[40G [\e[31;1mFAIL\e[0m]"
+        echo
         exit
     else
+        echo
         echo -e "  $2 \e[40G [\e[32;1mSUCCED\e[0m]"
+        echo
     fi
 }
 
-make clean >/dev/null 2>&1
-make distclean >/dev/null 2>&1
-make uninstall >/dev/null 2>&1
-make all >/dev/null 2>&1
+make clean
+make distclean
+make all
 
 # Check if the command executed succesfully
 retValue=$?
-message="Build TeraCache Library" 
+message="Build NVMUnsafe Library" 
 check ${retValue} "${message}"
 
-make TeraCache.jar >/dev/null 2>&1
+make NVMUnsafe.jar
 
 # Check if the command executed succesfully
 retValue=$?
-message="Build TeraCache JAR file" 
+message="Build NVMUnsafe JAR file" 
 check ${retValue} "${message}"
 
-sudo make install >/dev/null 2>&1
+make install
 
 # Check if the command executed succesfully
 retValue=$?
@@ -56,14 +59,14 @@ check ${retValue} "${message}"
 
 # Install the jar file
 mvn install:install-file \
-    -Dfile=TeraCache.jar \
-    -DgroupId=TeraCachePath \
-    -DartifactId=teraCache \
+    -Dfile=NVMUnsafe.jar \
+    -DgroupId=NVMUnsafePath \
+    -DartifactId=nvmUnsafe \
     -Dversion=1.0 \
     -Dpackaging=jar \
-    -DpomFile=/root/spark/pom.xml >/dev/null 2>&1
+    -DpomFile=/root/spark/pom.xml
 
 # Check if the command executed succesfully
 retValue=$?
-message="Install TeraCache Library to Spark" 
+message="Install NVMUnsafe Library to Spark" 
 check ${retValue} "${message}"
