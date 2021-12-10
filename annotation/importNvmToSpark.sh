@@ -47,7 +47,7 @@ retValue=$?
 message="Build TeraCache JAR file" 
 check ${retValue} "${message}"
 
-sudo make install >/dev/null 2>&1
+make install >/dev/null 2>&1
 
 # Check if the command executed succesfully
 retValue=$?
