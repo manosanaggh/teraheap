@@ -1,7 +1,8 @@
-#image: carvicsforth/centos_carv:latest
-image: bob.ics.forth.gr:443/jvm_ci/spark-base
+image: carvicsforth/centos_carv:latest
+#image: bob.ics.forth.gr:443/jvm_ci/spark-base
 stages:
     - build
+    - test
 
 jvm_release_build:
   stage: build
@@ -30,3 +31,9 @@ jvm_debug_build:
     - cd ../openjdk-8/openjdk8
     - bash ./configure --with-debug-level=release --with-target-bits=64 --disable-zip-debug-info --with-jobs=32
     - make DISABLE_HOTSPOT_OS_VERSION_CHECK=ok
+
+prepare_test:
+  stage: test
+  script:
+    - echo 'Hello $GITLAB_USER_NAME, testing is under construction! Please be patient'
+    - echo 'This is the value of LIBRARY_PATH $LIBRARY_PATH'
