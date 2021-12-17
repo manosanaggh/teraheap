@@ -1,4 +1,5 @@
-image: carvicsforth/centos_carv:latest
+#image: carvicsforth/centos_carv:latest
+image: bob.ics.forth.gr:443/jvm_ci/spark-base
 stages:
     - build
 
