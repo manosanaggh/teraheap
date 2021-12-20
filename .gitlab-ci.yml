@@ -35,9 +35,15 @@ stages:
 test_job:
   stage: build
   script:
-    - export TEST_PATH="IM PERSISTENT"
+    - export "TEST_PATH=$(pwd)" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
 prepare_test:
   stage: test
   script:
     - echo 'Hello $GITLAB_USER_NAME, testing is under construction! Please be patient!'
     - echo 'This is the value of TEST_PATH:' $TEST_PATH
+  needs:
+    - job: test_job
+      artifacts: true
