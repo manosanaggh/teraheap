@@ -5,20 +5,31 @@ stages:
     - build
     - test
 
-# jvm_release_build:
-#   stage: build
-#   script:
-#     - cd allocator
-#     - ./build.sh docker
-#     - export LIBRARY_PATH=$(pwd)/lib/:$LIBRARY_PATH
-#     - export LD_LIBRARY_PATH=$(pwd)/lib/:$LD_LIBRARY_PATH                                                                                           
-#     - export PATH=$(pwd)/include/:$PATH
-#     - export C_INCLUDE_PATH=$(pwd)/include/:$C_INCLUDE_PATH                                                                                         
-#     - export CPLUS_INCLUDE_PATH=$(pwd)/include/:$CPLUS_INCLUDE_PATH
-#     - cd ../openjdk-8/openjdk8
-#     - bash ./configure --with-jobs=1 --disable-debug-symbols --with-extra-cflags='-O3' --with-extra-cxxflags='-O3'
-#     - make DISABLE_HOTSPOT_OS_VERSION_CHECK=ok
-
+jvm_release_build:
+  variables:
+    ENV_FILE: $CI_BUILDS_DIR/kolokasis/sparkPersistentMemory/jvm_release_build.env
+  stage: build
+  script:
+    - cd allocator
+    - ./build.sh docker
+    - export LIBRARY_PATH=$(pwd)/lib/:$LIBRARY_PATH
+    - echo   "LIBRARY_PATH=$LIBRARY_PATH" >> $ENV_FILE
+    - export LD_LIBRARY_PATH=$(pwd)/lib/:$LD_LIBRARY_PATH
+    - echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $ENV_FILE                                                                                           
+    - export PATH=$(pwd)/include/:$PATH
+    - echo "PATH=$PATH" >> $ENV_FILE
+    - export C_INCLUDE_PATH=$(pwd)/include/:$C_INCLUDE_PATH
+    - echo "C_INCLUDE_PATH=$C_INCLUDE_PATH" >> $ENV_FILE                                                                                         
+    - export CPLUS_INCLUDE_PATH=$(pwd)/include/:$CPLUS_INCLUDE_PATH
+    - echo "CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH" >> $ENV_FILE
+    - cd ../openjdk-8/openjdk8
+    - cat $ENV_FILE
+    - bash ./configure --with-jobs=1 --disable-debug-symbols --with-extra-cflags='-O3' --with-extra-cxxflags='-O3'
+    - make DISABLE_HOTSPOT_OS_VERSION_CHECK=ok
+  artifacts:
+    reports:
+      dotenv: 
+        - $ENV_FILE
 # jvm_debug_build:
 #   stage: build
 #   script:
@@ -32,18 +43,11 @@ stages:
 #     - cd ../openjdk-8/openjdk8
 #     - bash ./configure --with-debug-level=release --with-target-bits=64 --disable-zip-debug-info --with-jobs=32
 #     - make DISABLE_HOTSPOT_OS_VERSION_CHECK=ok
-test_job:
-  stage: build
-  script:
-    - export "TEST_PATH=$(pwd)" >> build.env
-  artifacts:
-    reports:
-      dotenv: build.env
+
 prepare_test:
   stage: test
   script:
-    - echo 'Hello "$GITLAB_USER_NAME", testing is under construction! Please be patient!'
-    - echo 'This is the value of TEST_PATH:' "$TEST_PATH"
-  needs:
-    - job: test_job
-      artifacts: true
+    - echo 'Hello ' $GITLAB_USER_NAME ', testing is under construction! Please be patient!'
+    - echo  "$PATH"
+  dependencies:
+    - jvm_release_build
