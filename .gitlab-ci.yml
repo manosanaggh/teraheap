@@ -11,7 +11,7 @@ jvm_release_build:
   stage: build
   script:
     - cd allocator
-    - ./build.sh docker
+    # - ./build.sh docker
     - export LIBRARY_PATH=$(pwd)/lib/:$LIBRARY_PATH
     - echo   "LIBRARY_PATH=$LIBRARY_PATH" >> $ENV_FILE
     - export LD_LIBRARY_PATH=$(pwd)/lib/:$LD_LIBRARY_PATH
@@ -23,9 +23,8 @@ jvm_release_build:
     - export CPLUS_INCLUDE_PATH=$(pwd)/include/:$CPLUS_INCLUDE_PATH
     - echo "CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH" >> $ENV_FILE
     - cd ../openjdk-8/openjdk8
-    - cat $ENV_FILE
-    - bash ./configure --with-jobs=1 --disable-debug-symbols --with-extra-cflags='-O3' --with-extra-cxxflags='-O3'
-    - make DISABLE_HOTSPOT_OS_VERSION_CHECK=ok
+    # - bash ./configure --with-jobs=1 --disable-debug-symbols --with-extra-cflags='-O3' --with-extra-cxxflags='-O3'
+    # - make DISABLE_HOTSPOT_OS_VERSION_CHECK=ok
   artifacts:
     reports:
       dotenv: 
@@ -51,6 +50,8 @@ prepare_test:
     - echo  "$PATH"
     - cd benchmarks/spark-bench
     - ./bin/build-all.sh
+    - ls ~/.m2/repository
+    - ls ~/.m2/repository/edu
   dependencies:
     - jvm_release_build
 
