@@ -1,6 +1,6 @@
 # image: carvicsforth/centos_carv:latest
 #image: bob.ics.forth.gr:443/jvm_ci/spark-base
-image: registry.platform.science-hangar.eu/spark_jack_base:m2
+image: registry.platform.science-hangar.eu/tera_spark
 stages:
     - build
     - test
@@ -51,7 +51,7 @@ prepare_test:
     - cd benchmarks/spark-bench
     - ./bin/build-all.sh
     - ls ~/.m2/repository
-    - ls ~/.m2/repository/edu
+    - ls ~/.m2/repository/edu/jhu/nlp/wikixmlj
   dependencies:
     - jvm_release_build
 
