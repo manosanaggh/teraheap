@@ -49,5 +49,8 @@ prepare_test:
   script:
     - echo 'Hello ' $GITLAB_USER_NAME ', testing is under construction! Please be patient!'
     - echo  "$PATH"
+    - cd benchmarks/spark-bench
+    - ./bin/build-all.sh
   dependencies:
     - jvm_release_build
+
