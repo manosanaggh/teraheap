@@ -46,9 +46,9 @@ OFLAG = -o
 WALLFLAG = -Wall -Werror -pedantic
 OPTIMZEFLAG = -O3
 AIOFLAG = -lrt
-UMMAP = -lummapio -pthread
+UMMAP = -pthread -lummapio
 
-LDFLAGS = $(AIOFLAG) $(UMMAP)
+LDFLAGS = $(AIOFLAG) $(UMMAP) libparallax.a
 CFLAGS = $(BINFLAG) $(WALLFLAG) $(OPTIMIZEFLAG)
 
 ## Commands

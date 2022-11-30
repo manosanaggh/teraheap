@@ -7,7 +7,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <ummap.h>
+//#include <ummap.h>
+#include "ummap-io/include/ummap.h"
 #include <unistd.h>
 
 #include "../include/asyncIO.h"
@@ -47,8 +48,7 @@ void init(uint64_t align) {
   // tc_mem_pool.mmap_start =
   //    mmap(0, DEV_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   size_t segsize = 16777216;
-  ummap(DEV_SIZE, segsize, PROT_READ | PROT_WRITE, fd, 0, -1, 0, 0,
-        (void **)&tc_mem_pool.mmap_start);
+  ummap(DEV_SIZE, segsize, PROT_READ | PROT_WRITE, fd, (void **)&tc_mem_pool.mmap_start);
 #endif
 
   assertf(tc_mem_pool.mmap_start != MAP_FAILED, "Mapping Failed");
