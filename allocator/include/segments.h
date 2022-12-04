@@ -5,16 +5,16 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define PR_BUFFER 1
-#define PR_BUFFER_SIZE (2 * 1024LU * 1024) /* Promotion buffer size */
-#define HeapWordSize 8                     /* Java heap allignment */
-/* Objects that are grater than this threshold we write them directly
- * using async I/O. For objects less than this threshold we use the
- * promotion buffer. THRESHOLD should always be less than the
- * PR_BUFFER_SIZE*/
-#define THRESHOLD (1 * 1024LU * 1024)
+#define ANONYMOUS 0
+#define PR_BUFFER 1						
+#define PR_BUFFER_SIZE (2*1024LU*1024) /* Promotion buffer size */
+#define HeapWordSize 8				   /* Java heap allignment */
+/* Objects that are grater than this threshold we write them directly using
+ * async I/O. For objects less than this threshold we use the promotion buffer.
+ * THRESHOLD should always be less than the PR_BUFFER_SIZE*/
+#define THRESHOLD (1*1024LU*1024)	   
 
-struct offset {
+struct offset{
   uint64_t offset;
   struct offset *next;
 };
@@ -42,20 +42,22 @@ struct group {
 /*
  * The struct for regions
  */
-struct region {
-  char *start_address;
-  char *last_allocated_end;
-  char *last_allocated_start;
-  char *first_allocated_start;
-  struct group *dependency_list;
+struct region{
+    char *start_address;
+    char *last_allocated_end;
+    char *last_allocated_start;
+    char *first_allocated_start;
+    struct group *dependency_list;
+#if ANONYMOUS
   struct offset *offset_list;
+  size_t size_mapped; 
+#endif
 #if PR_BUFFER
   struct pr_buffer *pr_buffer;
 #endif
-  uint64_t used;
-  uint64_t rdd_id;
-  uint64_t part_id;
-  size_t size_mapped;
+    int8_t used;
+    uint32_t rdd_id;
+    uint32_t part_id;
 };
 
 /*
@@ -223,6 +225,23 @@ uint64_t get_obj_part_id(char *obj);
  * returns: 1 if objects are in the same group, 0 otherwise
  */
 int is_in_the_same_group(char *obj1, char *obj2);
+
+/*
+ * Get number of continious regions in H2
+ *
+ * addr: address of the object
+ */
+int get_num_of_continuous_regions(char *addr);
+
+/*
+ * Check if the objects starts from existing region
+ * 
+ * obj: object address
+ *
+ * returns: true if starts and false, otherwise
+ *
+ */
+bool object_starts_from_region(char *obj);
 
 #if PR_BUFFER
 /*
