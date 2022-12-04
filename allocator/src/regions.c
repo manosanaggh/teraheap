@@ -70,6 +70,10 @@ void init(uint64_t align) {
   req_init();
 }
 
+void __close(){
+	printf("Allocator closed!\n");
+}
+
 // Return the start address of the memory allocation pool
 char *start_addr_mem_pool() {
   assertf(tc_mem_pool.start_address != NULL, "Start address is NULL");

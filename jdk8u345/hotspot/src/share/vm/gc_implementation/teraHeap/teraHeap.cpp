@@ -68,6 +68,10 @@ TeraHeap::TeraHeap() {
 #endif
 }
 
+TeraHeap::~TeraHeap(){
+	__close();
+}
+
 // Return H2 start address
 char* TeraHeap::h2_start_addr(void) {
 	assert((char *)(_start_addr) != NULL, "H2 allocator is not initialized");

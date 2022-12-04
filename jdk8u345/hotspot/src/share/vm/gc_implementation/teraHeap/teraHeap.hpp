@@ -109,7 +109,10 @@ private:
 public:
   // Constructor
   TeraHeap();
-  
+ 
+  // Destructor
+  ~TeraHeap();
+
   // Get object start array for h2
   ObjectStartArray *start_array() { return &_start_array; }
   

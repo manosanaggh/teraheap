@@ -41,7 +41,9 @@ extern "C" {
 	// Initialize allocator with start address 'heap_end + 1'. The end of the
 	// heap.
 	void       init(uint64_t alignment);
-	
+
+	void	   __close();
+
 	// Return the start address of the memory allocation pool
 	char*      start_addr_mem_pool(void);
 	
