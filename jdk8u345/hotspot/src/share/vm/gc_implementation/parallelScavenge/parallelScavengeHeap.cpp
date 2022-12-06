@@ -84,6 +84,9 @@ jint ParallelScavengeHeap::initialize() {
 
   _reserved = MemRegion((HeapWord*)heap_rs.base(),
                         (HeapWord*)(heap_rs.base() + heap_rs.size()));
+    if (EnableTeraHeap) {
+      Universe::_teraHeap = new TeraHeap();
+    }
 
 #ifdef TERA_CARDS
   CardTableExtension* barrier_set;
@@ -92,7 +95,8 @@ jint ParallelScavengeHeap::initialize() {
 	  _tera_heap_reserved = MemRegion(
 			  (HeapWord*)Universe::teraHeap()->h2_start_addr(),
 			  (HeapWord*)Universe::teraHeap()->h2_end_addr());
-
+	  //printf("_tera_heap_reserved.start(): %p\n", _tera_heap_reserved.start()); 
+	  //printf("_reserved.end(): %p\n", _reserved.end());
     if (!(_tera_heap_reserved.start() >= _reserved.end()))
       vm_shutdown_during_initialization(
           "H2 should be in greater addresses than H1");

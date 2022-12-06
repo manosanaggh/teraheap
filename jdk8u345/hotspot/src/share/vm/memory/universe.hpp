@@ -195,7 +195,7 @@ private:
   // The particular choice of collected heap.
   static CollectedHeap *_collectedHeap;
 
-  static TeraHeap *_teraHeap;
+  //static TeraHeap *_teraHeap;
 
   static intptr_t _non_oop_bits;
 
@@ -269,6 +269,7 @@ private:
   static void compute_verify_oop_data();
 
 public:
+  static TeraHeap *_teraHeap;
   // Known classes in the VM
   static Klass *boolArrayKlassObj() { return _boolArrayKlassObj; }
   static Klass *byteArrayKlassObj() { return _byteArrayKlassObj; }
