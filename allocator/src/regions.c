@@ -68,10 +68,11 @@ void init(uint64_t align) {
 #endif
   init_regions();
   req_init();
+  printf("Allocator init!\n");
 }
 
 void __close(){
-	printf("Allocator closed!\n");
+  printf("Allocator closed!\n");
 }
 
 // Return the start address of the memory allocation pool

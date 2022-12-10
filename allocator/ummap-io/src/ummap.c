@@ -73,9 +73,10 @@ static void ensure_page_fit() {
       break;
     }
 
-    if (evict_page_dirty == NULL && IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)) {
+    if (IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)) {
       evict_page_dirty = page;
       dirty_index = index;
+      break;
     }
   }
 
@@ -84,13 +85,13 @@ static void ensure_page_fit() {
     sync_page(evict_page_dirty, dirty_index);
     fdatasync(ualloc->fd);
     // Mark the segment as non-valid
-    madvise(ualloc->addr + (dirty_index + PAGE_SIZE),  PAGE_SIZE, MADV_DONTNEED);
+    madvise(ualloc->addr + (dirty_index * PAGE_SIZE),  PAGE_SIZE, MADV_DONTNEED);
     DBGPRINT("Evict dirty");
   }
   else {
     // Mark the segment as non-valid
     RESET_VALID_FLAG(evict_page_clean);
-    madvise(ualloc->addr + (clean_index + PAGE_SIZE),  PAGE_SIZE, MADV_DONTNEED);
+    madvise(ualloc->addr + (clean_index * PAGE_SIZE),  PAGE_SIZE, MADV_DONTNEED);
     DBGPRINT("Evict clean");
   }
 }
