@@ -29,7 +29,7 @@ int page_cache_size = 0;
 
 #define PAGE_SIZE        (4096)
 #define PAGE_SHIFT       (  12)
-#define PAGE_CACHE_LIMIT (524288)
+#define PAGE_CACHE_LIMIT (1572864) //524288
 
 #define IS_PAGE_VALID(page)    ((page)->header & __UINT64_C(1))
 #define IS_PAGE_DIRTY(page)    ((page)->header & __UINT64_C(2))
@@ -167,7 +167,7 @@ static void * fault_handler_thread(void *arg)
 
     if (!IS_PAGE_VALID(page)) {
       // Ensure that we can fit another page
-      ensure_page_fit();
+      //ensure_page_fit();
 
       if (IS_PAGE_READ(page)) {
         int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, buffer);
@@ -197,7 +197,8 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-
+    sync_page(page, page_index);
+    fdatasync(ualloc->fd);
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
 }
