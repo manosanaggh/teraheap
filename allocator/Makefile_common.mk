@@ -21,7 +21,7 @@ LIBDIR = $(PREFIX)/lib
 INCLUDEDIR = $(PREFIX)/include
 
 ## Depended files
-LIBHEADERS =  $(INCLUDEDIR)/regions.h $(INCLUDEDIR)/asyncIO.h $(INCLUDEDIR)/segments.h
+LIBHEADERS =  $(INCLUDEDIR)/regions.h $(INCLUDEDIR)/asyncIO.h $(INCLUDEDIR)/segments.h $(INCLUDEDIR)/parallax_db.hpp
 LIBREGIONSOBJS = $(SRCDIR)/regions.o $(SRCDIR)/asyncIO.o $(SRCDIR)/segments.o
 REGIONSLIBRARY = $(LIBDIR)/libregions.so
 
@@ -50,8 +50,9 @@ OPTIMZEFLAG = -O3
 AIOFLAG = -lrt
 UMMAP = -pthread -lummapio
 
-LDFLAGS = $(AIOFLAG) $(UMMAP) libparallax.a
+LDFLAGS = $(AIOFLAG) $(UMMAP)
 CFLAGS = $(BINFLAG) $(WALLFLAG) $(OPTIMIZEFLAG)
+LIBPARALLAX=libparallax.a
 
 ## Commands
 RM = rm -fr

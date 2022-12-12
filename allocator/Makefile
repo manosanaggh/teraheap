@@ -32,33 +32,33 @@ tc_multi_region: $(TC_ALLOCATE_MULTI_REGION_EXE)
 
 $(TC_ALLOCATE_MULTI_REGION_EXE): $(TC_ALLOCATE_MULTI_REGION) $(REGIONSLIBRARY)
 	@echo -e '[$(BYELLOW)LNK$(RESET)]' $^
-	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $@ 
+	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $(LIBPARALLAX) $@ 
 
 $(TC_ALLOCATE_EXE): $(TC_ALLOCATE_OBJ) $(REGIONSLIBRARY)
 	@echo -e '[$(BYELLOW)LNK$(RESET)]' $^
-	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $@ 
+	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $(LIBPARALLAX) $@ 
 
 $(TC_GROUP_EXE): $(TC_GROUP_OBJ) $(REGIONSLIBRARY)
 	@echo -e '[$(BYELLOW)LNK$(RESET)]' $^
-	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $@ 
+	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $(LIBPARALLAX) $@ 
 
 $(TC_FREE_EXE): $(TC_FREE_OBJ) $(REGIONSLIBRARY)
 	@echo -e '[$(BYELLOW)LNK$(RESET)]' $^
-	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $@ 
+	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $(LIBPARALLAX) $@ 
 
 $(TC_SYNC_EXE): $(TC_SYNC_OBJ) $(REGIONSLIBRARY)
 	@echo -e '[$(BYELLOW)LNK$(RESET)]' $^
-	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $@ 
+	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $(LIBPARALLAX) $@ 
 
 $(TC_ASYNC_EXE): $(TC_ASYNC_OBJ) $(REGIONSLIBRARY)
 	@echo -e '[$(BYELLOW)LNK$(RESET)]' $^
-	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $@ 
+	@$(CC) $< $(REGIONSLIBRARY) $(OFLAG) $(LIBPARALLAX) $@  
 
 $(REGIONSLIBRARY): $(LIBREGIONSOBJS)
 	@echo -e '[$(BBLUE)MKDIR$(RESET)]' $(LIBDIR)
 	@$(MKDIR) $(LIBDIR)
 	@echo -e '[$(BYELLOW)LINK$(RESET)]' $(REGIONSLIBRARY)
-	@$(CC) $(LIBREGIONSOBJS) -shared -o $(REGIONSLIBRARY) $(LDFLAGS)
+	g++ $(LIBREGIONSOBJS) src/parallax_db.o -shared -o $(REGIONSLIBRARY) $(LDFLAGS) $(LIBPARALLAX)
 
 %.o: %.c
 	@echo -e '[$(BGREEN)GCC$(RESET)]' $<
@@ -97,6 +97,7 @@ distclean: clean
 	@$(RM) $(REGIONSLIBRARY)
 	@echo -e '[$(BRED)RM$(RESET)]' $(LIBDIR)
 	@$(RM) $(LIBDIR)
+	g++ -c -fPIC -o src/parallax_db.o src/parallax_db.cpp
 
 test:
 	@for t in $$(ls *.bin); do \
