@@ -3,8 +3,9 @@
 
 #include <assert.h>
 
-#define FALSE 0
-#define TRUE  1
+#define FALSE       0
+#define TRUE        1
+#define DEBUG_PRINT 0
 
 #if DEBUG_PRINT
     #warning Debug prints are enabled and may incur in performance penalties.
