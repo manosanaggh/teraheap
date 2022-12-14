@@ -9,12 +9,14 @@ int Parallax_init(){
 		db_options.volume_name = (char *)pathname;
 		db_options.create_flag = PAR_CREATE_DB;
 		db_options.options = par_get_default_options();
+    fprintf(stderr, "here1\n");
 		dbs.clear();
 		for (int i = 0; i < DB_NUM; ++i) {
 			std::string db_name = "data" + std::to_string(i) + ".dat";
 			db_options.db_name = (char *)db_name.c_str();
 			const char *error_message = nullptr;
 			par_handle hd = par_open(&db_options, &error_message);
+      fprintf(stderr, "here2\n");
 
 			if (error_message != nullptr) {
 				std::cerr << error_message << std::endl;

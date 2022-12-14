@@ -72,10 +72,10 @@
 //#define SYNC				            //< Enable explicit I/O path for the writes
                                   // in TeraHeap during major GC
 
-//#define ASYNC				              //< Asynchronous I/O path for the writes in
+#define ASYNC				              //< Asynchronous I/O path for the writes in
                                   // TeraHeap
 
-//#define PR_BUFFER			            //< Enable promotion buffer for async I/O to
+#define PR_BUFFER			            //< Enable promotion buffer for async I/O to
                                   // reduce the number of system calls 
 
 //#define FMAP				              //< When we use fastmap we need to ensure

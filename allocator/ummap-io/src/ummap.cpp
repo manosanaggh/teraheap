@@ -41,6 +41,7 @@ static void write_page(off_t page_index) {
   void *page_addr = ualloc->addr + (page_index * PAGE_SIZE);
   printf("page_addr = %p\n", page_addr);
   int x = pwrite(ualloc->fd, page_addr, PAGE_SIZE, page_index * PAGE_SIZE);
+  printf("bytes writen = %d", x);
   DBGPRINT("Written %d bytes\n", x);
 }
 
@@ -197,7 +198,7 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-    //sync_page(page, page_index);
+    sync_page(page, page_index);
     //fsync(ualloc->fd);
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
