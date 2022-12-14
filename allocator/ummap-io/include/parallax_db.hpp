@@ -1,3 +1,4 @@
+  //extern "C" is mandatory here
 extern "C"{
   #include <parallax.h>
 }
@@ -9,7 +10,7 @@ extern "C"{
 #ifndef PARALLAX_DB
 #define PARALLAX_DB  
   #define DB_NUM  1
-  #define PATH  "/mnt/fmap/parallax.txt"
+  #define PATH  "/mnt/datasets/parallax.txt"
 
   extern std::vector<par_handle> dbs;
 
