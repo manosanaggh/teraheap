@@ -56,4 +56,6 @@
 
 #define DEBUG_PRINT 0			      //< Enable debug prints
 
+#define PARALLAX
+
 #endif

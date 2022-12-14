@@ -7,14 +7,12 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-//#include <ummap.h>
-#include "ummap-io/include/ummap.h"
+#include <ummap.h>
 #include <unistd.h>
-
-#include "../include/asyncIO.h"
-#include "../include/regions.h"
-#include "../include/segments.h"
-#include "../include/sharedDefines.h"
+#include <asyncIO.h>
+#include <regions.h>
+#include <segments.h>
+#include <sharedDefines.h>
 
 #define HEAPWORD (8)     // In the JVM the heap is aligned to 8 words
 #define HEADER_SIZE (32) // Header size of the Dummy object
@@ -43,12 +41,19 @@ void init(uint64_t align) {
       mmap(0, V_SPACE, PROT_READ | PROT_WRITE,
            MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
 #else
-  fd = open(DEV, O_RDWR);
+  fd = open(DEV, O_RDWR | O_DIRECT | O_SYNC, S_IRUSR|S_IWUSR);
+  if(fd == -1){
+    fprintf(stderr, "[ERROR] Error opening /mnt/fmap/file.txt\n");
+    return;
+  }
   // Memory-mapped a file over a storage device
   // tc_mem_pool.mmap_start =
   //    mmap(0, DEV_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   size_t segsize = 16777216;
   ummap(DEV_SIZE, segsize, PROT_READ | PROT_WRITE, fd, (void **)&tc_mem_pool.mmap_start);
+#ifdef PARALLAX
+  Parallax_init();
+#endif
 #endif
 
   assertf(tc_mem_pool.mmap_start != MAP_FAILED, "Mapping Failed");

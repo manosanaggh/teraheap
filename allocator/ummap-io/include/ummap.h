@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <linux/userfaultfd.h>
+#include <parallax_db.hpp>
 
 /**
  * Establishes an user-level memory-mapped I/O allocation, which maps a given

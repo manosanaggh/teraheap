@@ -11,7 +11,6 @@ extern "C" {
 #endif
 
 #include "segments.h"
-
 #if defined (__ia64__) || defined (__x86_64__)
 #define INT_PTR unsigned long
 
@@ -37,6 +36,7 @@ extern "C" {
 	extern struct _mem_pool tc_mem_pool;	//< Allocator pool
 	extern int fd;							//< File descriptor for the opended file
 	extern int num_reqs;					//< Number of asynchronous write requests
+
 
 	// Initialize allocator with start address 'heap_end + 1'. The end of the
 	// heap.

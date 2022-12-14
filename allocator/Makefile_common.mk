@@ -21,8 +21,8 @@ LIBDIR = $(PREFIX)/lib
 INCLUDEDIR = $(PREFIX)/include
 
 ## Depended files
-LIBHEADERS =  $(INCLUDEDIR)/regions.h $(INCLUDEDIR)/asyncIO.h $(INCLUDEDIR)/segments.h $(INCLUDEDIR)/parallax_db.hpp
-LIBREGIONSOBJS = $(SRCDIR)/regions.o $(SRCDIR)/asyncIO.o $(SRCDIR)/segments.o
+LIBHEADERS =  $(INCLUDEDIR)/regions.h $(INCLUDEDIR)/asyncIO.h $(INCLUDEDIR)/segments.h
+LIBREGIONSOBJS = $(SRCDIR)/asyncIO.o $(SRCDIR)/segments.o
 REGIONSLIBRARY = $(LIBDIR)/libregions.so
 
 TC_ALLOCATE_OBJ = $(TESTDIR)/tc_allocate.o
@@ -40,6 +40,7 @@ TC_ASYNC_EXE = tc_async_write.bin
 TC_ALLOCATE_MULTI_REGION_EXE = tc_allocate_multi_regions.bin
 
 CC = gcc
+CXX = g++
 
 ## Flags
 BINFLAG = -c
@@ -50,9 +51,8 @@ OPTIMZEFLAG = -O3
 AIOFLAG = -lrt
 UMMAP = -pthread -lummapio
 
-LDFLAGS = $(AIOFLAG) $(UMMAP)
+LDFLAGS = $(AIOFLAG) $(UMMAP) 
 CFLAGS = $(BINFLAG) $(WALLFLAG) $(OPTIMIZEFLAG)
-LIBPARALLAX=libparallax.a
 
 ## Commands
 RM = rm -fr

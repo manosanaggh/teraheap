@@ -1,6 +1,5 @@
-#include "include/ummap.h"
 #define _GNU_SOURCE
-  #include <inttypes.h>
+#include <inttypes.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <linux/userfaultfd.h>
@@ -16,10 +15,9 @@
 #include <sys/syscall.h>
 #include <sys/ioctl.h>
 #include <poll.h>
-
-#include "../include/common.h"
-#include "../include/ummap_types.h"
-#include "../include/ummap.h"
+#include <ummap.h>
+#include <ummap_types.h>
+#include <common.h>
 
 ummap_alloc_t *ualloc;  // Usespace mmap instance
 #if FALSE
@@ -29,7 +27,7 @@ int page_cache_size = 0;
 
 #define PAGE_SIZE        (4096)
 #define PAGE_SHIFT       (  12)
-#define PAGE_CACHE_LIMIT (1572864) //524288
+#define PAGE_CACHE_LIMIT (524288) //1572864
 
 #define IS_PAGE_VALID(page)    ((page)->header & __UINT64_C(1))
 #define IS_PAGE_DIRTY(page)    ((page)->header & __UINT64_C(2))
@@ -41,7 +39,9 @@ int page_cache_size = 0;
 
 static void write_page(off_t page_index) {
   void *page_addr = ualloc->addr + (page_index * PAGE_SIZE);
-  pwrite(ualloc->fd, page_addr, PAGE_SIZE, page_index * PAGE_SIZE);
+  printf("page_addr = %p\n", page_addr);
+  int x = pwrite(ualloc->fd, page_addr, PAGE_SIZE, page_index * PAGE_SIZE);
+  DBGPRINT("Written %d bytes\n", x);
 }
 
 static void sync_page(ummap_page_t *page, off_t page_index) {
@@ -170,7 +170,7 @@ static void * fault_handler_thread(void *arg)
       //ensure_page_fit();
 
       if (IS_PAGE_READ(page)) {
-        int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, buffer);
+        int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, &buffer);
         DBGPRINT("Device read: %d bytes", num_bytes);
       }
     }
@@ -197,8 +197,8 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-    sync_page(page, page_index);
-    fdatasync(ualloc->fd);
+    //sync_page(page, page_index);
+    //fsync(ualloc->fd);
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
 }
@@ -225,7 +225,7 @@ void ummap(size_t size, int prot, int fd, off_t offset, void **ptr) {
               demand-zero paged--that is, not yet allocated. When we
               actually touch the memory, it will be allocated via
               the userfaultfd. */
-  addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
+  addr = (char *)mmap(NULL, size, PROT_READ | PROT_WRITE,
               MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (addr == MAP_FAILED)
     errExit("mmap");
@@ -249,7 +249,7 @@ void ummap(size_t size, int prot, int fd, off_t offset, void **ptr) {
   ualloc->size           = size;
   ualloc->uffdio_api      = uffdio_api;
   ualloc->uffdio_register = uffdio_register;
-  ualloc->page_array      = calloc(num_pages, sizeof(ummap_page_t));
+  ualloc->page_array      = (ummap_page_t *)calloc(num_pages, sizeof(ummap_page_t));
 
   for (i = 0; i < num_pages; i++) {
     ummap_page_t *page = &ualloc->page_array[i];

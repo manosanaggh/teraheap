@@ -1,4 +1,6 @@
-#include "../include/parallax_db.hpp"
+#include <parallax_db.hpp>
+
+std::vector<par_handle> dbs;
 
 int Parallax_init(){
 		const char *pathname = PATH;
