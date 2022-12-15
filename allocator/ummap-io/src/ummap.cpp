@@ -39,9 +39,16 @@ int page_cache_size = 0;
 
 static void write_page(off_t page_index) {
   void *page_addr = ualloc->addr + (page_index * PAGE_SIZE);
-  printf("page_addr = %p\n", page_addr);
-  int x = pwrite(ualloc->fd, page_addr, PAGE_SIZE, page_index * PAGE_SIZE);
-  printf("bytes writen = %d", x);
+  unsigned long page_align_addr = (unsigned long) page_addr & ~(PAGE_SIZE - 1);
+  unsigned long file_offset = page_align_addr - (unsigned long) ualloc->addr;
+  char *buffer;
+  if(posix_memalign((void **)&buffer, 512, PAGE_SIZE))
+    fprintf(stderr, "[WRITE_PAGE] posix_memalign failed!\n");
+  memcpy(buffer, "26", 3);
+  fprintf(stderr, "after memcpy\n");
+  int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
+  printf("[WRITE_PAGE] file_offset = %lu\tbytes writen = %d\n", file_offset, x);
+  free(buffer);
   DBGPRINT("Written %d bytes\n", x);
 }
 
@@ -188,7 +195,7 @@ static void * fault_handler_thread(void *arg)
     // Copy the page pointed to by 'page' into the faulting region.
     // Vary the contents that are copied in, so that it is more
     // obvious that each fault is handled separately.
-    uffdio_copy.src = (unsigned long) buffer;
+    uffdio_copy.src = (unsigned long) page;
 
     // We need to handle page faults in units of pages(!). So, round
     // faulting address down to page boundary.
