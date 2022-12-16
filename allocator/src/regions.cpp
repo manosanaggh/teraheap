@@ -13,6 +13,7 @@
 #include <regions.h>
 #include <segments.h>
 #include <sharedDefines.h>
+#include <iostream>
 
 #define HEAPWORD (8)     // In the JVM the heap is aligned to 8 words
 #define HEADER_SIZE (32) // Header size of the Dummy object
@@ -41,14 +42,12 @@ void init(uint64_t align) {
       mmap(0, V_SPACE, PROT_READ | PROT_WRITE,
            MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
 #else
-  fd = open(DEV, O_RDWR | O_DIRECT | O_SYNC, S_IRUSR|S_IWUSR);
+  fd = open(DEV, O_RDWR | O_DIRECT | O_SYNC);
+  //std::cout << "fd = " << fd << std::endl;
   if(fd == -1){
-    fprintf(stderr, "[ERROR] Error opening /mnt/fmap/file.txt\n");
+    std::cerr << "[ERROR] Error opening /mnt/fmap/file.txt" << std::endl;
     return;
   }
-  // Memory-mapped a file over a storage device
-  // tc_mem_pool.mmap_start =
-  //    mmap(0, DEV_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   size_t segsize = 16777216;
   ummap(DEV_SIZE, segsize, PROT_READ | PROT_WRITE, fd, (void **)&tc_mem_pool.mmap_start);
 #ifdef PARALLAX
@@ -73,11 +72,11 @@ void init(uint64_t align) {
 #endif
   init_regions();
   req_init();
-  printf("Allocator init!\n");
+  std::cout << "Allocator init!" << std::endl;
 }
 
 void __close(){
-  printf("Allocator closed!\n");
+  std::cout << "Allocator closed!" << std::endl;
 }
 
 // Return the start address of the memory allocation pool

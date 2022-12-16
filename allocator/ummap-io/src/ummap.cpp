@@ -17,7 +17,7 @@
 #include <poll.h>
 #include <ummap.h>
 #include <ummap_types.h>
-#include <common.h>
+#include <common.hpp>
 
 ummap_alloc_t *ualloc;  // Usespace mmap instance
 #if FALSE
@@ -43,15 +43,11 @@ static void write_page(off_t page_index) {
   unsigned long file_offset = page_align_addr - (unsigned long) ualloc->addr;
   char *buffer;
   if(posix_memalign((void **)&buffer, 512, PAGE_SIZE))
-    fprintf(stderr, "[WRITE_PAGE] posix_memalign failed!\n");
-  //fprintf(stderr, "b4 memcpy\n");
+    std::cerr << "[WRITE_PAGE] posix_memalign failed!" << std::endl;
   memcpy(buffer, page_addr, PAGE_SIZE);
-  //fprintf(stderr, "after memcpy\n");
-  fprintf(stderr, "buffer = %s\n", (char*)buffer);
   int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
-  //printf("[WRITE_PAGE] file_offset = %lu\tbytes writen = %d\n", file_offset, x);
+  DBGPRINT("Written %d bytes with value %s to fd %d\n", x, (char*)buffer, ualloc->fd);
   free(buffer);
-  DBGPRINT("Written %d bytes\n", x);
 }
 
 static void sync_page(ummap_page_t *page, off_t page_index) {
@@ -74,7 +70,6 @@ static void ensure_page_fit() {
   ummap_page_t *evict_page_clean = NULL;
   ummap_page_t *evict_page_dirty = NULL;
 
-  //DBGPRINT("Evict dirty");
   for (index = 0; index < total_pages; index++) {
     ummap_page_t *page = &(ualloc->page_array[index]); 
     if (IS_PAGE_VALID(page) && !IS_PAGE_DIRTY(page)) {
@@ -110,7 +105,6 @@ static int read_page(unsigned long addr, void **buffer) {
   unsigned long page_align_addr = (unsigned long) addr & ~(PAGE_SIZE - 1);
   unsigned long file_offset = page_align_addr - (unsigned long) ualloc->addr;
   int read_bytes;
-
   read_bytes = pread(ualloc->fd, *buffer, PAGE_SIZE, file_offset);
 
   if (read_bytes == -1) {
@@ -127,8 +121,11 @@ static void * fault_handler_thread(void *arg)
   long uffd;                    /* userfaultfd file descriptor */
   struct uffdio_copy uffdio_copy;
   ssize_t nread;
-  void *buffer = calloc(PAGE_SIZE, sizeof(char));
-
+  //void *buffer = calloc(PAGE_SIZE, sizeof(char));
+  char *buffer;
+  if(posix_memalign((void **)&buffer, 512, PAGE_SIZE))
+    std::cerr << "[F_H_T] posix_memalign failed!" << std::endl;
+  
   uffd = (long) arg;
 
   /* Loop, handling incoming events on the userfaultfd
@@ -181,7 +178,9 @@ static void * fault_handler_thread(void *arg)
       
       // Major page fault
       if (IS_PAGE_READ(page)) {
-        int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, &buffer);
+        futex_lock(&page->futex);
+        int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, (void**)&buffer);
+        futex_unlock(&page->futex);
         DBGPRINT("Device read: %d bytes", num_bytes);
       }
     }
@@ -190,7 +189,7 @@ static void * fault_handler_thread(void *arg)
     futex_lock(&page->futex);
     DBGPRINT("Header Before: %lu", page->header);
     // Update the header to set the timestamp and the dirty flag, if needed
-    SET_HEADER(page, TRUE, msg.arg.pagefault.flags, !!IS_PAGE_READ(page), (msg.arg.pagefault.flags * time(NULL)));
+    SET_HEADER(page, TRUE, msg.arg.pagefault.flags, !IS_PAGE_READ(page), (msg.arg.pagefault.flags * time(NULL)));
     DBGPRINT("Header Before: %lu", page->header);
     // Release the lock for the page
     futex_unlock(&page->futex);
@@ -208,13 +207,17 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-    //sync_page(page, page_index);
+    if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)){
+      //std::cout << "VALID && DIRTY" << std::endl;
+      sync_page(page, page_index);
+    }
     //fsync(ualloc->fd);
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
+  pthread_exit(NULL);
 }
 
-void ummap(size_t size, int prot, int fd, off_t offset, void **ptr) {
+void ummap(size_t size, int prot, const int fd, off_t offset, void **ptr) {
   long uffd;          /* userfaultfd file descriptor */
   char *addr;         /* Start of region handled by userfaultfd */
   struct uffdio_api uffdio_api;
@@ -256,7 +259,7 @@ void ummap(size_t size, int prot, int fd, off_t offset, void **ptr) {
   
   ualloc->addr            = addr;
   ualloc->uffd            = uffd;
-  ualloc->fd              = dup(fd);
+  ualloc->fd              = fd + 1;
   ualloc->size            = size;
   ualloc->uffdio_api      = uffdio_api;
   ualloc->uffdio_register = uffdio_register;
