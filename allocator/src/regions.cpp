@@ -43,7 +43,6 @@ void init(uint64_t align) {
            MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
 #else
   fd = open(DEV, O_RDWR | O_DIRECT | O_SYNC);
-  //std::cout << "fd = " << fd << std::endl;
   if(fd == -1){
     std::cerr << "[ERROR] Error opening /mnt/fmap/file.txt" << std::endl;
     return;

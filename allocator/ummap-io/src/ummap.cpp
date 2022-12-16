@@ -27,7 +27,7 @@ int page_cache_size = 0;
 
 #define PAGE_SIZE        (4096)
 #define PAGE_SHIFT       (  12)
-#define PAGE_CACHE_LIMIT (524288) //1572864 - 524288 -131072
+#define PAGE_CACHE_LIMIT (131072) //1572864 - 524288 -131072
 
 #define IS_PAGE_VALID(page)    ((page)->header & __UINT64_C(1))
 #define IS_PAGE_DIRTY(page)    ((page)->header & __UINT64_C(2))
@@ -88,7 +88,6 @@ static void ensure_page_fit() {
   if (evict_page_clean == NULL && evict_page_dirty != NULL) {
     // Synchronize the segment with storage, if dirty
     sync_page(evict_page_dirty, dirty_index);
-    //fdatasync(ualloc->fd);
     // Mark the segment as non-valid
     madvise(ualloc->addr + (dirty_index * PAGE_SIZE),  PAGE_SIZE, MADV_DONTNEED);
     DBGPRINT("Evict dirty");
@@ -178,9 +177,9 @@ static void * fault_handler_thread(void *arg)
       
       // Major page fault
       if (IS_PAGE_READ(page)) {
-        futex_lock(&page->futex);
+        //futex_lock(&page->futex);
         int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, (void**)&buffer);
-        futex_unlock(&page->futex);
+        //futex_unlock(&page->futex);
         DBGPRINT("Device read: %d bytes", num_bytes);
       }
     }
@@ -207,11 +206,10 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-    if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)){
+    /*if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)){
       //std::cout << "VALID && DIRTY" << std::endl;
       sync_page(page, page_index);
-    }
-    //fsync(ualloc->fd);
+    }*/
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
   pthread_exit(NULL);
