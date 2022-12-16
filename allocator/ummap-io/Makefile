@@ -9,7 +9,7 @@ UMAPFLAG = -lummapio
 CXX			 = g++
 CXXFLAGS   = -O2 -I. -L$(LIBDIR) -L. 
 CXXFLAGS  += -Wall -Wno-unused-label -Wno-unused-function
-#CXXFLAGS  += -DDEBUG_PRINT=$(or $(DEBUG_PRINT),1)
+CXXFLAGS  += -DDEBUG_PRINT=$(or $(DEBUG_PRINT),1)
 LDFLAGS  = -pthread -lrt -lparallax 
 
 all: setup $(LIBPATH) $(BINDIR)/test

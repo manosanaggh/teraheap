@@ -27,7 +27,7 @@ int page_cache_size = 0;
 
 #define PAGE_SIZE        (4096)
 #define PAGE_SHIFT       (  12)
-#define PAGE_CACHE_LIMIT (524288) //1572864
+#define PAGE_CACHE_LIMIT (524288) //1572864 - 524288 -131072
 
 #define IS_PAGE_VALID(page)    ((page)->header & __UINT64_C(1))
 #define IS_PAGE_DIRTY(page)    ((page)->header & __UINT64_C(2))
@@ -44,10 +44,12 @@ static void write_page(off_t page_index) {
   char *buffer;
   if(posix_memalign((void **)&buffer, 512, PAGE_SIZE))
     fprintf(stderr, "[WRITE_PAGE] posix_memalign failed!\n");
-  memcpy(buffer, "26", 3);
-  fprintf(stderr, "after memcpy\n");
+  //fprintf(stderr, "b4 memcpy\n");
+  memcpy(buffer, page_addr, PAGE_SIZE);
+  //fprintf(stderr, "after memcpy\n");
+  fprintf(stderr, "buffer = %s\n", (char*)buffer);
   int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
-  printf("[WRITE_PAGE] file_offset = %lu\tbytes writen = %d\n", file_offset, x);
+  //printf("[WRITE_PAGE] file_offset = %lu\tbytes writen = %d\n", file_offset, x);
   free(buffer);
   DBGPRINT("Written %d bytes\n", x);
 }
@@ -72,7 +74,7 @@ static void ensure_page_fit() {
   ummap_page_t *evict_page_clean = NULL;
   ummap_page_t *evict_page_dirty = NULL;
 
-  DBGPRINT("Evict dirty");
+  //DBGPRINT("Evict dirty");
   for (index = 0; index < total_pages; index++) {
     ummap_page_t *page = &(ualloc->page_array[index]); 
     if (IS_PAGE_VALID(page) && !IS_PAGE_DIRTY(page)) {
@@ -91,7 +93,7 @@ static void ensure_page_fit() {
   if (evict_page_clean == NULL && evict_page_dirty != NULL) {
     // Synchronize the segment with storage, if dirty
     sync_page(evict_page_dirty, dirty_index);
-    fdatasync(ualloc->fd);
+    //fdatasync(ualloc->fd);
     // Mark the segment as non-valid
     madvise(ualloc->addr + (dirty_index * PAGE_SIZE),  PAGE_SIZE, MADV_DONTNEED);
     DBGPRINT("Evict dirty");
@@ -175,8 +177,9 @@ static void * fault_handler_thread(void *arg)
 
     if (!IS_PAGE_VALID(page)) {
       // Ensure that we can fit another page
-      //ensure_page_fit();
-
+      ensure_page_fit();
+      
+      // Major page fault
       if (IS_PAGE_READ(page)) {
         int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, &buffer);
         DBGPRINT("Device read: %d bytes", num_bytes);
@@ -195,7 +198,7 @@ static void * fault_handler_thread(void *arg)
     // Copy the page pointed to by 'page' into the faulting region.
     // Vary the contents that are copied in, so that it is more
     // obvious that each fault is handled separately.
-    uffdio_copy.src = (unsigned long) page;
+    uffdio_copy.src = (unsigned long) buffer;
 
     // We need to handle page faults in units of pages(!). So, round
     // faulting address down to page boundary.
@@ -205,7 +208,7 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-    sync_page(page, page_index);
+    //sync_page(page, page_index);
     //fsync(ualloc->fd);
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
@@ -254,7 +257,7 @@ void ummap(size_t size, int prot, int fd, off_t offset, void **ptr) {
   ualloc->addr            = addr;
   ualloc->uffd            = uffd;
   ualloc->fd              = dup(fd);
-  ualloc->size           = size;
+  ualloc->size            = size;
   ualloc->uffdio_api      = uffdio_api;
   ualloc->uffdio_register = uffdio_register;
   ualloc->page_array      = (ummap_page_t *)calloc(num_pages, sizeof(ummap_page_t));
