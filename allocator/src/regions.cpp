@@ -45,7 +45,7 @@ void init(uint64_t align) {
   fd = open(DEV, O_RDWR | O_DIRECT | O_SYNC);
   if(fd == -1){
     std::cerr << "[ERROR] Error opening /mnt/fmap/file.txt" << std::endl;
-    return;
+    exit(EXIT_FAILURE);
   }
   size_t segsize = 16777216;
   ummap(DEV_SIZE, segsize, PROT_READ | PROT_WRITE, fd, (void **)&tc_mem_pool.mmap_start);
@@ -75,6 +75,9 @@ void init(uint64_t align) {
 }
 
 void __close(){
+  #ifdef PARALLAX
+    Parallax_close();
+  #endif
   std::cout << "Allocator closed!" << std::endl;
 }
 

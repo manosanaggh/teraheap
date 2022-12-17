@@ -2,7 +2,7 @@
 
 std::vector<par_handle> dbs;
 
-int Parallax_init(){
+void Parallax_init(){
 		const char *pathname = PATH;
 
 		par_db_options db_options;
@@ -20,16 +20,14 @@ int Parallax_init(){
 
 			if (error_message != nullptr) {
 				std::cerr << error_message << std::endl;
-				return 1;
+				exit(EXIT_FAILURE);
 			}
 
 			dbs.push_back(hd);
 		}
-
-    return 0;
 }
 
-int Parallax_read(const std::string &key){
+void Parallax_read(const std::string &key){
 		std::hash<std::string> hash_fn;
 		uint32_t db_id = hash_fn(key) % DB_NUM;
 		std::map<std::string, std::string> vmap;
@@ -40,16 +38,34 @@ int Parallax_read(const std::string &key){
 		par_get(dbs[db_id], &lookup_key, &lookup_value, &error_message);
 		if (error_message) {
 			std::cout << "[1]cannot find : " << key << " in DB " << db_id << std::endl;
-			return 1;
+			exit(EXIT_FAILURE);
 		}
 		free(lookup_value.val_buffer);
 		lookup_value.val_buffer = NULL;
-
-    return 0;
 }
 
-int Parallax_insert(const std::string &key, const std::string &value){
+void Parallax_insert(const std::string &key, const std::string &value){
 		std::hash<std::string> hash_fn;
 		uint32_t db_id = hash_fn(key) % DB_NUM;
-    return 0;
+		struct par_key_value KV_pair = { .k = { .size = 0, .data = NULL }, .v = { .val_buffer = NULL } };
+		const char *error_message = NULL;
+    KV_pair.k.size = key.length();
+		KV_pair.k.data = key.c_str();
+		KV_pair.v.val_buffer = (char *)value.c_str();
+		KV_pair.v.val_size = value.length();
+		par_put(dbs[db_id], &KV_pair, &error_message);
+		if (error_message != nullptr) {
+			std::cerr << error_message << std::endl;
+			exit(EXIT_FAILURE);
+		}
+}
+
+void Parallax_close(){
+ 		for (int i = 0; i < DB_NUM; ++i) {
+			const char *error_message = par_close(dbs[i]);
+			if (error_message != nullptr) {
+				std::cerr << error_message << std::endl;
+				exit(EXIT_FAILURE);
+			}
+    }
 }

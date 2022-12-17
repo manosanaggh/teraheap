@@ -14,12 +14,12 @@ extern "C"{
 
   extern std::vector<par_handle> dbs;
 
-  extern int Parallax_init();
+  extern void Parallax_init();
 
-  extern int Parallax_insert(const std::string &key, const std::string &value);
+  extern void Parallax_insert(const std::string &key, const std::string &value);
 
-  extern int Parallax_read(const std::string &key);
+  extern void Parallax_read(const std::string &key);
 
-  //extern int Parallax_close();
+  extern void Parallax_close();
 #endif
 

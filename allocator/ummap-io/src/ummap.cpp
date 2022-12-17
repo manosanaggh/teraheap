@@ -17,7 +17,6 @@
 #include <poll.h>
 #include <ummap.h>
 #include <ummap_types.h>
-//#include <common.hpp>
 
 ummap_alloc_t *ualloc;  // Usespace mmap instance
 #if FALSE
@@ -48,17 +47,13 @@ static void write_page(off_t page_index) {
     unsigned long file_offset = page_align_addr - (unsigned long) ualloc->addr;
     int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
     DBGPRINT("Written %d bytes with value %s to fd %d\n", x, (char*)buffer, ualloc->fd);
-    free(buffer);
   #else
     std::string key((char*)page_addr);
     std::string value(buffer);
-    int res;
-    if((res = Parallax_insert(key, value))){
-      std::cerr << "[WRITE_PAGE] Inserting the page to parallax failed!\n" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    std::cout << "[WRITE_PAGE] Inserting the page to parallax completed with success!" << std::endl;
+    Parallax_insert(key, value);
+    //std::cout << "[WRITE_PAGE] Inserting the page to parallax completed with success!" << std::endl;
   #endif
+  free(buffer);
 }
 
 static void sync_page(ummap_page_t *page, off_t page_index) {
