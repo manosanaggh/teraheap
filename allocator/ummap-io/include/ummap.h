@@ -3,8 +3,10 @@
 
 #include <stdlib.h>
 #include <linux/userfaultfd.h>
-#include <parallax_db.hpp>
-
+#include <common.hpp>
+#ifdef PARALLAX
+  #include <parallax_db.hpp>
+#endif
 /**
  * Establishes an user-level memory-mapped I/O allocation, which maps a given
  * file from storage to memory in segments of the specified size.

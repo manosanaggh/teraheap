@@ -17,7 +17,7 @@
 #include <poll.h>
 #include <ummap.h>
 #include <ummap_types.h>
-#include <common.hpp>
+//#include <common.hpp>
 
 ummap_alloc_t *ualloc;  // Usespace mmap instance
 #if FALSE
@@ -27,7 +27,7 @@ int page_cache_size = 0;
 
 #define PAGE_SIZE        (4096)
 #define PAGE_SHIFT       (  12)
-#define PAGE_CACHE_LIMIT (131072) //1572864 - 524288 -131072
+#define PAGE_CACHE_LIMIT (524288) //1572864 - 524288 -131072
 
 #define IS_PAGE_VALID(page)    ((page)->header & __UINT64_C(1))
 #define IS_PAGE_DIRTY(page)    ((page)->header & __UINT64_C(2))
@@ -38,16 +38,27 @@ int page_cache_size = 0;
 #define GET_FLUSH_TIME(page)  ((page)->header >> 8)
 
 static void write_page(off_t page_index) {
-  void *page_addr = ualloc->addr + (page_index * PAGE_SIZE);
-  unsigned long page_align_addr = (unsigned long) page_addr & ~(PAGE_SIZE - 1);
-  unsigned long file_offset = page_align_addr - (unsigned long) ualloc->addr;
+  void *page_addr = ualloc->addr + (page_index * PAGE_SIZE); 
   char *buffer;
   if(posix_memalign((void **)&buffer, 512, PAGE_SIZE))
     std::cerr << "[WRITE_PAGE] posix_memalign failed!" << std::endl;
   memcpy(buffer, page_addr, PAGE_SIZE);
-  int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
-  DBGPRINT("Written %d bytes with value %s to fd %d\n", x, (char*)buffer, ualloc->fd);
-  free(buffer);
+  #ifndef PARALLAX
+    unsigned long page_align_addr = (unsigned long) page_addr & ~(PAGE_SIZE - 1);
+    unsigned long file_offset = page_align_addr - (unsigned long) ualloc->addr;
+    int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
+    DBGPRINT("Written %d bytes with value %s to fd %d\n", x, (char*)buffer, ualloc->fd);
+    free(buffer);
+  #else
+    std::string key((char*)page_addr);
+    std::string value(buffer);
+    int res;
+    if((res = Parallax_insert(key, value))){
+      std::cerr << "[WRITE_PAGE] Inserting the page to parallax failed!\n" << std::endl;
+      exit(EXIT_FAILURE);
+    }
+    std::cout << "[WRITE_PAGE] Inserting the page to parallax completed with success!" << std::endl;
+  #endif
 }
 
 static void sync_page(ummap_page_t *page, off_t page_index) {
@@ -110,7 +121,7 @@ static int read_page(unsigned long addr, void **buffer) {
       perror("pread fail");
       exit(EXIT_FAILURE);
   }
-
+  std::cout << "Read " << read_bytes << " bytes" << std::endl;
   return read_bytes;
 }
 
@@ -177,9 +188,7 @@ static void * fault_handler_thread(void *arg)
       
       // Major page fault
       if (IS_PAGE_READ(page)) {
-        //futex_lock(&page->futex);
         int num_bytes = read_page((unsigned long) msg.arg.pagefault.address, (void**)&buffer);
-        //futex_unlock(&page->futex);
         DBGPRINT("Device read: %d bytes", num_bytes);
       }
     }
@@ -206,10 +215,12 @@ static void * fault_handler_thread(void *arg)
     uffdio_copy.copy = 0;
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
-    /*if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)){
-      //std::cout << "VALID && DIRTY" << std::endl;
-      sync_page(page, page_index);
-    }*/
+    #ifdef NO_EVICT_DIRECT_WRITE_PATH
+      if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)){
+        //std::cout << "VALID && DIRTY" << std::endl;
+        sync_page(page, page_index);
+      }
+    #endif
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
   pthread_exit(NULL);

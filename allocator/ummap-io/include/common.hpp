@@ -23,4 +23,7 @@
 #define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
 } while (0)
 
+#define PARALLAX
+#define NO_EVICT_DIRECT_WRITE_PATH
+
 #endif // __COMMON_HPP__
