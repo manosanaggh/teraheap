@@ -84,9 +84,7 @@ jint ParallelScavengeHeap::initialize() {
 
   _reserved = MemRegion((HeapWord*)heap_rs.base(),
                         (HeapWord*)(heap_rs.base() + heap_rs.size()));
-    /*if (EnableTeraHeap) {
-      Universe::_teraHeap = new TeraHeap();
-    }*/
+
 #ifdef TERA_CARDS
   CardTableExtension* barrier_set;
   if (EnableTeraHeap) {
