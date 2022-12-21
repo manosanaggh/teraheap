@@ -111,7 +111,7 @@ public:
   TeraHeap();
  
   // Destructor
-  ~TeraHeap();
+  virtual ~TeraHeap();
 
   // Get object start array for h2
   ObjectStartArray *start_array() { return &_start_array; }

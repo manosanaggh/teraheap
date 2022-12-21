@@ -48,7 +48,10 @@ static void write_page(off_t page_index) {
     int x = pwrite(ualloc->fd, (const void *)buffer, PAGE_SIZE, file_offset);
     DBGPRINT("Written %d bytes with value %s to fd %d\n", x, (char*)buffer, ualloc->fd);
   #else
-    std::string key((char*)page_addr);
+    char *char_addr;
+    char_addr = (char*)calloc(10, sizeof(char));
+    sprintf(char_addr, "%p", page_addr);
+    std::string key(char_addr);
     std::string value(buffer);
     Parallax_insert(key, value);
     //std::cout << "[WRITE_PAGE] Inserting the page to parallax completed with success!" << std::endl;
@@ -126,7 +129,9 @@ static void * fault_handler_thread(void *arg)
   long uffd;                    /* userfaultfd file descriptor */
   struct uffdio_copy uffdio_copy;
   ssize_t nread;
-  //void *buffer = calloc(PAGE_SIZE, sizeof(char));
+  #ifndef PARALLAX
+    static uint32_t cnt_pages = 0;
+  #endif
   char *buffer;
   if(posix_memalign((void **)&buffer, 512, PAGE_SIZE))
     std::cerr << "[F_H_T] posix_memalign failed!" << std::endl;
@@ -192,7 +197,7 @@ static void * fault_handler_thread(void *arg)
     futex_lock(&page->futex);
     DBGPRINT("Header Before: %lu", page->header);
     // Update the header to set the timestamp and the dirty flag, if needed
-    SET_HEADER(page, TRUE, msg.arg.pagefault.flags, !IS_PAGE_READ(page), (msg.arg.pagefault.flags * time(NULL)));
+    SET_HEADER(page, TRUE, msg.arg.pagefault.flags, IS_PAGE_READ(page), (msg.arg.pagefault.flags * time(NULL)));
     DBGPRINT("Header Before: %lu", page->header);
     // Release the lock for the page
     futex_unlock(&page->futex);
@@ -211,14 +216,22 @@ static void * fault_handler_thread(void *arg)
     if (ioctl(uffd, UFFDIO_COPY, &uffdio_copy) == -1)
       errExit("ioctl-UFFDIO_COPY");
     #ifdef NO_EVICT_DIRECT_WRITE_PATH
-      if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page)){
-        //std::cout << "VALID && DIRTY" << std::endl;
-        sync_page(page, page_index);
-      }
+      #ifndef PARALLAX
+        if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page))
+            cnt_pages++;
+      #endif
+      #ifdef PARALLAX
+        if(IS_PAGE_VALID(page) && IS_PAGE_DIRTY(page))
+            sync_page(page, page_index);
+      #else
+        if(cnt_pages == 5){
+            cnt_pages = 0;
+            sync_page(page, page_index);
+        }
+      #endif
     #endif
     DBGPRINT("uffdio_copy.copy returned %lld", uffdio_copy.copy);
   }
-  pthread_exit(NULL);
 }
 
 void ummap(size_t size, int prot, const int fd, off_t offset, void **ptr) {

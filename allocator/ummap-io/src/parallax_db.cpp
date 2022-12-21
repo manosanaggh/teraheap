@@ -52,7 +52,7 @@ void Parallax_insert(const std::string &key, const std::string &value){
     KV_pair.k.size = key.length();
 		KV_pair.k.data = key.c_str();
 		KV_pair.v.val_buffer = (char *)value.c_str();
-		KV_pair.v.val_size = value.length();
+		KV_pair.v.val_size = 4000;
 		par_put(dbs[db_id], &KV_pair, &error_message);
 		if (error_message != nullptr) {
 			std::cerr << error_message << std::endl;

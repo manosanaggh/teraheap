@@ -139,10 +139,10 @@ Array<Method *> *Universe::_the_empty_method_array = NULL;
 
 // These variables are guarded by FullGCALot_lock.
 debug_only(objArrayOop Universe::_fullgc_alot_dummy_array = NULL;)
-    debug_only(int Universe::_fullgc_alot_dummy_next = 0;)
+debug_only(int Universe::_fullgc_alot_dummy_next = 0;)
 
-    // Heap
-    int Universe::_verify_count = 0;
+// Heap
+int Universe::_verify_count = 0;
 
 int Universe::_base_vtable_size = 0;
 bool Universe::_bootstrapping = false;
@@ -853,11 +853,8 @@ jint Universe::initialize_heap() {
   if (UseParallelGC) {
 #if INCLUDE_ALL_GCS
     Universe::_collectedHeap = new ParallelScavengeHeap();
-    if (EnableTeraHeap) {
-      //TeraHeap th;
+    if (EnableTeraHeap)
       Universe::_teraHeap = new TeraHeap();
-      //Universe::_teraHeap = &th;
-    }
 #else  // INCLUDE_ALL_GCS
     fatal("UseParallelGC not supported in this VM.");
 #endif // INCLUDE_ALL_GCS

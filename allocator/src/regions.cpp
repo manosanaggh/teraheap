@@ -76,7 +76,7 @@ void init(uint64_t align) {
 
 void __close(){
   #ifdef PARALLAX
-    Parallax_close();
+    //Parallax_close();
   #endif
   std::cout << "Allocator closed!" << std::endl;
 }
