@@ -870,6 +870,7 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 				dirty_diff[i] / cnt_dirty,
 				cnt_dirty,
         page_cnt);
+    thlog_or_tty->flush();
 	}
 
   // After minor gc the number of dirty cards should be zero
