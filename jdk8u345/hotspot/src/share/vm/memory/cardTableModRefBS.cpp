@@ -781,6 +781,12 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 	int num_youngen_card = 0;
 	int num_oldgen_card = 0;
 
+	uint32_t cnt_cards = 0;
+
+	static uint32_t page_cnt = 0;
+
+	Stack<uint32_t*, mtGC> page_cards_stats;
+
 	while (cur < last) { 
 		if (*cur == dirty_card)
 			num_dirty_card++;
@@ -792,19 +798,80 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 			num_clean_card++;
 		}
 		cur++;
+
+		cnt_cards++;
+
+    if(cnt_cards == 8){
+			uint32_t *cards_stats = (uint32_t*)calloc(4, sizeof(uint32_t));
+			cards_stats[0] = num_dirty_card; 
+      cards_stats[1] = num_youngen_card;
+			cards_stats[2] = num_oldgen_card;
+			cards_stats[3] = num_clean_card;
+			page_cards_stats.push(cards_stats);
+			num_dirty_card = 0;
+			num_youngen_card = 0;
+			num_oldgen_card = 0;
+			num_clean_card = 0;
+			cnt_cards = 0;
+		}
 	}
 
-	if (before)
-		thlog_or_tty->print_cr("BEFORE\n");
-	else 
-		thlog_or_tty->print_cr("AFTER\n");
+	uint32_t *get_stats;
 
+	static uint32_t cnt_dirty = 0;
 
-	thlog_or_tty->print_cr("\t\t DIRTY_CARDS  = %d\n", num_dirty_card);
-	thlog_or_tty->print_cr("\t\t YOUNGEN_CARD = %d\n", num_youngen_card);
-	thlog_or_tty->print_cr("\t\t OLDGEN_CARD  = %d\n", num_oldgen_card);
-	thlog_or_tty->print_cr("\t\t CLEAN_CARD   = %d\n", num_clean_card);
-	
+	static double *dirty_diff = (double*)calloc(9, sizeof(double));
+
+	while(!page_cards_stats.is_empty()){
+		get_stats = page_cards_stats.pop(); 
+
+		switch(get_stats[0]){
+			case 0:
+				(dirty_diff[0])++;
+				break;
+      case 1:
+        (dirty_diff[1])++;
+				break;
+      case 2:
+        (dirty_diff[2])++;
+				break;
+      case 3:
+        (dirty_diff[3])++;
+				break;
+      case 4:
+        (dirty_diff[4])++;
+				break;
+      case 5:
+        (dirty_diff[5])++;
+				break;
+      case 6:
+        (dirty_diff[6])++;
+				break;
+      case 7:
+        (dirty_diff[7])++;
+				break;
+      case 8:
+        (dirty_diff[8])++;
+				break;
+			default:
+        exit(EXIT_FAILURE);
+		}
+
+		if(get_stats[0] > 0)
+			cnt_dirty++;
+		page_cnt++;
+	}
+
+	uint32_t i;
+
+	for(i = 1; i < 9; i++){
+		thlog_or_tty->print_cr("Percent of pages with %u dirty cards: %2f\tNumber of dirty pages: %u\tNumber of all pages: %u",
+				i,
+				dirty_diff[i] / cnt_dirty,
+				cnt_dirty,
+        page_cnt);
+	}
+
   // After minor gc the number of dirty cards should be zero
   DEBUG_ONLY(if (!before) { assert(num_dirty_card == 0, "Dirty cards exists after minor gc");});
 }

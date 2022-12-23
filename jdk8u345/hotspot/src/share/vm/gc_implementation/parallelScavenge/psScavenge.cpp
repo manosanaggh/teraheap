@@ -373,6 +373,7 @@ bool PSScavenge::invoke_no_policy() {
   BarrierSet *bs = Universe::heap()->barrier_set();
   ModRefBarrierSet* modBS = (ModRefBarrierSet*)bs;
   static bool first_minor_gc = true;
+  static uint32_t cnt_minor = 1;
 
   if (EnableTeraHeap) {
 	  // In the first minor collection make all the cells in the teracache card
@@ -386,7 +387,7 @@ bool PSScavenge::invoke_no_policy() {
 		  first_minor_gc = false;
 	  }
 
-    if (TeraHeapCardStatistics) {
+    if (TeraHeapCardStatistics && (cnt_minor++) % 2 == 1) {
       modBS->th_num_dirty_cards(
           (HeapWord*)Universe::teraHeap()->h2_start_addr(),
           (HeapWord *) Universe::teraHeap()->h2_top_addr(), true);
@@ -827,11 +828,11 @@ bool PSScavenge::invoke_no_policy() {
     if (TeraHeapStatistics)
       Universe::teraHeap()->print_minor_gc_statistics();
 
-    if (TeraHeapCardStatistics) {
+    /*if (TeraHeapCardStatistics) {
       modBS->th_num_dirty_cards(
           (HeapWord*)Universe::teraHeap()->h2_start_addr(),
           (HeapWord *) Universe::teraHeap()->h2_top_addr(), false);
-    }
+    }*/
   }
 
   return !promotion_failure_occurred;
