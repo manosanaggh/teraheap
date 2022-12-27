@@ -27,7 +27,9 @@ uint64_t TeraHeap::back_ptrs_per_mgc;
 uint64_t TeraHeap::obj_distr_size[3];
 long int TeraHeap::cur_obj_group_id;
 long int TeraHeap::cur_obj_part_id;
-
+  uint32_t TeraHeap::p_to_h2 = 0;
+  uint32_t TeraHeap::m_to_h2 = 0;
+  uint32_t TeraHeap::gc_count = 1;
 // Constructor of TeraHeap
 TeraHeap::TeraHeap() {
 

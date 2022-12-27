@@ -53,6 +53,8 @@
                                   // Scavenge single threaded version
                                   // MajorGC
 
+//#define TERA_PSLOCAL              // Enable TeraHeap PSLocal way of forwarding objects to H2
+
 //#define TEST_CLONE                // Clone objects
 
 #define DISABLE_TRAVERSE_OLD_GEN  //< Disable backward reference traversal

@@ -107,6 +107,9 @@ private:
   void h2_reset_marked_objects();
 
 public:
+    static uint32_t p_to_h2;
+    static uint32_t m_to_h2;
+    static uint32_t gc_count;
   // Constructor
   TeraHeap();
   
