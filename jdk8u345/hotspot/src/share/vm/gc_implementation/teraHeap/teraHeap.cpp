@@ -519,11 +519,12 @@ void TeraHeap::h2_mark_back_references()
 	
 	gettimeofday(&end_time, NULL);
 
-	if (TeraHeapStatistics)
+	if (TeraHeapStatistics){
 		thlog_or_tty->print_cr("[STATISTICS] | TC_MARK = %llu\n", 
 				(unsigned long long)((end_time.tv_sec - start_time.tv_sec) * 1000) + // convert to ms
 				(unsigned long long)((end_time.tv_usec - start_time.tv_usec) / 1000)); // convert to ms
-  thlog_or_tty->flush();                                                                     
+    thlog_or_tty->flush();
+  }
 }
 
 // Prints all active regions
@@ -547,11 +548,12 @@ void TeraHeap::h2_adjust_back_references() {
 	
 	gettimeofday(&end_time, NULL);
 
-	if (TeraHeapStatistics)
+	if (TeraHeapStatistics){
 		thlog_or_tty->print_cr("[STATISTICS] | TC_ADJUST %llu\n",
 				(unsigned long long)((end_time.tv_sec - start_time.tv_sec) * 1000) + // convert to ms
 				(unsigned long long)((end_time.tv_usec - start_time.tv_usec) / 1000)); // convert to ms
-  thlog_or_tty->flush();
+    thlog_or_tty->flush();
+  }
 }
 
 // Enables groupping with region of obj
