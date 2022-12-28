@@ -27,9 +27,11 @@ uint64_t TeraHeap::back_ptrs_per_mgc;
 uint64_t TeraHeap::obj_distr_size[3];
 long int TeraHeap::cur_obj_group_id;
 long int TeraHeap::cur_obj_part_id;
+#ifdef TERA_PSLOCAL_DEBUG
   uint32_t TeraHeap::p_to_h2 = 0;
   uint32_t TeraHeap::m_to_h2 = 0;
   uint32_t TeraHeap::gc_count = 1;
+#endif
 // Constructor of TeraHeap
 TeraHeap::TeraHeap() {
 
@@ -762,15 +764,17 @@ bool TeraHeap::h2_promotion_policy(oop obj, bool is_direct) {
 	return obj->is_marked_move_h2();
 
 #elif defined(HINT_HIGH_LOW_WATERMARK)
-  if (is_direct) {
-    if (!obj->is_marked_move_h2())
+  //if (is_direct) {
+    //return obj->is_marked_move_h2() && check_low_promotion_threshold(obj->size());
+  //}
+  if(is_direct){
+    if(!obj->is_marked_move_h2())
       return false;
-
     return check_low_promotion_threshold(obj->size());
   }
-	
-  if (direct_promotion)
-    return obj->is_marked_move_h2();
+
+	if (direct_promotion)
+		return obj->is_marked_move_h2();
 
 	return (obj->is_marked_move_h2() && obj->get_obj_group_id() <=  promote_tag);
 

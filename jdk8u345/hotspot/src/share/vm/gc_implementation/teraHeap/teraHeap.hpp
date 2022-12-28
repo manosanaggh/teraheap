@@ -107,9 +107,11 @@ private:
   void h2_reset_marked_objects();
 
 public:
+  #ifdef TERA_PSLOCAL_DEBUG
     static uint32_t p_to_h2;
     static uint32_t m_to_h2;
     static uint32_t gc_count;
+  #endif
   // Constructor
   TeraHeap();
   
