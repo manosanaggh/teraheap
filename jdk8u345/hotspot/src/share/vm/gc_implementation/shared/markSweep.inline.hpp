@@ -108,7 +108,7 @@ template <class T> inline void MarkSweep::tera_back_ref_mark_and_push(T* p) {
 #endif
 			}
 
-      #ifdef TERA_PSLOCAL 
+      #ifndef TERA_PSLOCAL 
         // Check if the object needs to be moved in TeraCache based on the
         // current policy
         if (EnableTeraHeap && Universe::teraHeap()->h2_promotion_policy(obj, Universe::teraHeap()->is_direct_promote())) {
@@ -243,20 +243,6 @@ template <class T> inline void MarkSweep::mark_and_push(T* p) {
 #endif
 
     if (!obj->mark()->is_marked()) {
-      #ifdef TERA_PSLOCAL 
-        // Check if the object needs to be moved in TeraCache based on the
-        // current policy
-        if (EnableTeraHeap && Universe::teraHeap()->h2_promotion_policy(obj, Universe::teraHeap()->is_direct_promote())) {
-          // Take a pointer from the region
-          Universe::teraHeap()->m_to_h2++;
-          HeapWord* h2_obj_addr = (HeapWord*) Universe::teraHeap()->h2_add_object(obj, obj->size());
-          assert(Universe::teraHeap()->is_obj_in_h2(oop(h2_obj_addr)), "Pointer from H2 is not valid");
-          if(!Universe::teraHeap()->is_obj_in_h2(oop(h2_obj_addr)))
-            fprintf(stderr, "[mark_and_push] Pointer from H2 is not valid\n");
-          // Store the forwarding pointer into the mark word
-          obj->forward_to(oop(h2_obj_addr));
-        }
-      #endif
       mark_object(obj);
       _marking_stack.push(obj);
     }
