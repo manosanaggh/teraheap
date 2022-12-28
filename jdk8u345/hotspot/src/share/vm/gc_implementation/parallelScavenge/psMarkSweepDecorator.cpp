@@ -129,14 +129,15 @@ void PSMarkSweepDecorator::precompact() {
 
       #ifdef TERA_PSLOCAL
        if(EnableTeraHeap && Universe::teraHeap()->is_obj_in_h2(oop(q)->forwardee())){
-           Universe::teraHeap()->p_to_h2++;
+          //fprintf(stderr, "%ld\n", oop(q)->get_obj_state());
+          Universe::teraHeap()->p_to_h2++;
           // Encoding the pointer should preserve the mark
           assert(oop(q)->is_gc_marked(),  "encoding the pointer should preserve the mark");
 
           // Move to the next object
           q += size;
 
-          // Set this object as live in the in the precompact space
+          // Set this object as live in the precompact space
           end_of_live = q;
 
           // Continue with the next object
@@ -163,7 +164,7 @@ void PSMarkSweepDecorator::precompact() {
       // Move to the next object
       q += size;
 
-      // Set this object as live in the in the precompact space
+      // Set this object as live in the precompact space
       end_of_live = q;
 
       // Continue with the next object
@@ -337,10 +338,12 @@ void PSMarkSweepDecorator::precompact() {
 
   // Update compaction top
   dest->set_compaction_top(compact_top);
-
-  fprintf(stderr, "GC: %u\tm_to_h2 = %u\tp_to_h2 = %u\n-------------------------\n",Universe::teraHeap()->gc_count++,
+  
+  if(Universe::teraHeap()->m_to_h2 || Universe::teraHeap()->p_to_h2)
+    fprintf(stderr, "GC: %u\tm_to_h2 = %u\tp_to_h2 = %u\n-------------------------\n",Universe::teraHeap()->gc_count,
       Universe::teraHeap()->m_to_h2,
       Universe::teraHeap()->p_to_h2);
+  Universe::teraHeap()->gc_count++;
 }
 
 bool PSMarkSweepDecorator::insert_deadspace(size_t& allowed_deadspace_words,
