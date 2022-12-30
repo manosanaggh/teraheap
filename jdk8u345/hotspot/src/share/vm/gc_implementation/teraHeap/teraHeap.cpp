@@ -27,7 +27,7 @@ uint64_t TeraHeap::back_ptrs_per_mgc;
 uint64_t TeraHeap::obj_distr_size[3];
 long int TeraHeap::cur_obj_group_id;
 long int TeraHeap::cur_obj_part_id;
-#ifdef TERA_PSLOCAL_DEBUG
+#if defined(TERA_PSLOCAL_PUSH_DEBUG) || defined(TERA_PSLOCAL_POP_DEBUG)
   uint32_t TeraHeap::p_to_h2 = 0;
   uint32_t TeraHeap::m_to_h2 = 0;
   uint32_t TeraHeap::gc_count = 1;

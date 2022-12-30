@@ -111,14 +111,14 @@ template <class T> inline void MarkSweep::tera_back_ref_mark_and_push(T* p) {
 			_marking_stack.push(obj);
 		}
 
-    #ifdef TERA_PSLOCAL 
+    #ifdef TERA_PSLOCAL_PUSH 
       // Check if the object needs to be moved in TeraCache based on the
       // current policy
       if (EnableTeraHeap 
           && Universe::teraHeap()->h2_promotion_policy(obj, Universe::teraHeap()->is_direct_promote()) 
           && !Universe::teraHeap()->is_obj_in_h2(obj->forwardee())) {
         // Take a pointer from the region
-        #ifdef TERA_PSLOCAL_DEBUG
+        #ifdef TERA_PSLOCAL_PUSH_DEBUG
           Universe::teraHeap()->m_to_h2++;
         #endif
         HeapWord* h2_obj_addr = (HeapWord*) Universe::teraHeap()->h2_add_object(obj, obj->size());
@@ -183,14 +183,14 @@ template <class T> inline void MarkSweep::tera_mark_and_push(T* p) {
       _marking_stack.push(obj);
     }
 
-    #ifdef TERA_PSLOCAL 
+    #ifdef TERA_PSLOCAL_PUSH 
       // Check if the object needs to be moved in TeraCache based on the
       // current policy
       if (EnableTeraHeap 
           && Universe::teraHeap()->h2_promotion_policy(obj, Universe::teraHeap()->is_direct_promote()) 
           && !Universe::teraHeap()->is_obj_in_h2(obj->forwardee())) {
         // Take a pointer from the region
-        #ifdef TERA_PSLOCAL_DEBUG
+        #ifdef TERA_PSLOCAL_PUSH_DEBUG
           Universe::teraHeap()->m_to_h2++;
         #endif
         HeapWord* h2_obj_addr = (HeapWord*) Universe::teraHeap()->h2_add_object(obj, obj->size());
@@ -257,14 +257,14 @@ template <class T> inline void MarkSweep::mark_and_push(T* p) {
       _marking_stack.push(obj);
     }
 
-    #ifdef TERA_PSLOCAL 
+    #ifdef TERA_PSLOCAL_PUSH 
       // Check if the object needs to be moved in TeraCache based on the
       // current policy
       if (EnableTeraHeap 
           && Universe::teraHeap()->h2_promotion_policy(obj, Universe::teraHeap()->is_direct_promote()) 
           && !Universe::teraHeap()->is_obj_in_h2(obj->forwardee())) {
         // Take a pointer from the region
-        #ifdef TERA_PSLOCAL_DEBUG
+        #ifdef TERA_PSLOCAL_PUSH_DEBUG
           Universe::teraHeap()->m_to_h2++;
         #endif   
         HeapWord* h2_obj_addr = (HeapWord*) Universe::teraHeap()->h2_add_object(obj, obj->size());

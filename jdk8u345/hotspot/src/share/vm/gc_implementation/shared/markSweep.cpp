@@ -71,6 +71,24 @@ void MarkSweep::follow_stack() {
       oop obj = _marking_stack.pop();
       assert (obj->is_gc_marked(), "p must be marked");
       obj->follow_contents();
+      #ifdef TERA_PSLOCAL_POP 
+        // Check if the object needs to be moved in TeraCache based on the
+        // current policy
+        if (EnableTeraHeap 
+          && Universe::teraHeap()->h2_promotion_policy(obj, Universe::teraHeap()->is_direct_promote()) 
+          && !Universe::teraHeap()->is_obj_in_h2(obj->forwardee())) {
+          // Take a pointer from the region
+          #ifdef TERA_PSLOCAL_POP_DEBUG
+            Universe::teraHeap()->m_to_h2++;
+          #endif
+          HeapWord* h2_obj_addr = (HeapWord*) Universe::teraHeap()->h2_add_object(obj, obj->size());
+          assert(Universe::teraHeap()->is_obj_in_h2(oop(h2_obj_addr)), "Pointer from H2 is not valid");
+          if(!Universe::teraHeap()->is_obj_in_h2(oop(h2_obj_addr)))
+            fprintf(stderr, "[tera_back_ref_mark_and_push] Pointer from H2 is not valid\n");
+          // Store the forwarding pointer into the mark word
+          obj->forward_to(oop(h2_obj_addr));
+        }
+      #endif
     }
     // Process ObjArrays one at a time to avoid marking stack bloat.
     if (!_objarray_stack.is_empty()) {

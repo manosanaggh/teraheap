@@ -53,9 +53,13 @@
                                   // Scavenge single threaded version
                                   // MajorGC
 
-#define TERA_PSLOCAL              // Enable PSLocal way of forwarding objects to H2
+//#define TERA_PSLOCAL_PUSH              // Enable PSLocal way of forwarding objects to H2
 
-//#define TERA_PSLOCAL_DEBUG        // Enable debugging for the PSLocal mechanism
+//#define TERA_PSLOCAL_PUSH_DEBUG        // Enable debugging for the PSLocal mechanism
+
+#define TERA_PSLOCAL_POP
+
+//#define TERA_PSLOCAL_POP_DEBUG
 
 //#define TEST_CLONE                // Clone objects
 
@@ -76,10 +80,10 @@
 //#define SYNC				            //< Enable explicit I/O path for the writes
                                   // in TeraHeap during major GC
 
-//#define ASYNC				              //< Asynchronous I/O path for the writes in
+#define ASYNC				              //< Asynchronous I/O path for the writes in
                                   // TeraHeap
 
-//#define PR_BUFFER			            //< Enable promotion buffer for async I/O to
+#define PR_BUFFER			            //< Enable promotion buffer for async I/O to
                                   // reduce the number of system calls 
 
 //#define FMAP				              //< When we use fastmap we need to ensure

@@ -127,9 +127,9 @@ void PSMarkSweepDecorator::precompact() {
       Prefetch::write(q, interval);
       size_t size = oop(q)->size();
 
-      #ifdef TERA_PSLOCAL
+      #if defined(TERA_PSLOCAL_PUSH) || defined(TERA_PSLOCAL_POP)
        if(EnableTeraHeap && Universe::teraHeap()->is_obj_in_h2(oop(q)->forwardee())){
-          #ifdef TERA_PSLOCAL_DEBUG
+          #if defined(TERA_PSLOCAL_PUSH_DEBUG) || defined(TERA_PSLOCAL_POP_DEBUG)
             Universe::teraHeap()->p_to_h2++;
           #endif
           // Encoding the pointer should preserve the mark
@@ -146,12 +146,13 @@ void PSMarkSweepDecorator::precompact() {
        } 
       #endif
 
-#ifndef TERA_PSLOCAL
+#ifndef TERA_PSLOCAL_PUSH
+#ifndef TERA_PSLOCAL_POP
   #ifdef TERA_MAJOR_GC
     // Check if the object needs to be moved in TeraCache based on the
     // current policy
     if (EnableTeraHeap && Universe::teraHeap()->h2_promotion_policy(oop(q), Universe::teraHeap()->is_direct_promote())) {
-      #ifdef TERA_PSLOCAL_DEBUG
+      #if defined(TERA_PSLOCAL_PUSH_DEBUG) || defined(TERA_PSLOCAL_POP_DEBUG)
         Universe::teraHeap()->p_to_h2++;
       #endif
       // Take a pointer from the region
@@ -174,6 +175,7 @@ void PSMarkSweepDecorator::precompact() {
       continue;
     }
   #endif
+#endif
 #endif
       size_t compaction_max_size = pointer_delta(compact_end, compact_top);
 
@@ -342,7 +344,7 @@ void PSMarkSweepDecorator::precompact() {
   // Update compaction top
   dest->set_compaction_top(compact_top);
   
-  #ifdef TERA_PSLOCAL_DEBUG
+  #if defined(TERA_PSLOCAL_PUSH_DEBUG) || defined(TERA_PSLOCAL_POP_DEBUG)
     if(Universe::teraHeap()->m_to_h2 || Universe::teraHeap()->p_to_h2)
       fprintf(stderr, "GC: %u\tm_to_h2 = %u\tp_to_h2 = %u\n-------------------------\n",Universe::teraHeap()->gc_count,
         Universe::teraHeap()->m_to_h2,
