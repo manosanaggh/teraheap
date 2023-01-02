@@ -801,7 +801,7 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 
 		cnt_cards++;
 
-    if(cnt_cards == 8){
+    if(cnt_cards == 4){
 			uint32_t *cards_stats = (uint32_t*)calloc(4, sizeof(uint32_t));
 			cards_stats[0] = num_dirty_card; 
       cards_stats[1] = num_youngen_card;
@@ -820,7 +820,7 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 
 	static uint32_t cnt_dirty = 0;
 
-	static double *dirty_diff = (double*)calloc(9, sizeof(double));
+	static double *dirty_diff = (double*)calloc(5, sizeof(double));
 
 	while(!page_cards_stats.is_empty()){
 		get_stats = page_cards_stats.pop(); 
@@ -841,7 +841,7 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
       case 4:
         (dirty_diff[4])++;
 				break;
-      case 5:
+      /*case 5:
         (dirty_diff[5])++;
 				break;
       case 6:
@@ -852,7 +852,7 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 				break;
       case 8:
         (dirty_diff[8])++;
-				break;
+				break;*/
 			default:
         exit(EXIT_FAILURE);
 		}
@@ -864,7 +864,7 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 
 	uint32_t i;
 
-	for(i = 1; i < 9; i++){
+	for(i = 1; i < 5; i++){
 		thlog_or_tty->print_cr("Percent of pages with %u dirty cards: %2f\tNumber of dirty pages: %u\tNumber of all pages: %u",
 				i,
 				dirty_diff[i] / cnt_dirty,

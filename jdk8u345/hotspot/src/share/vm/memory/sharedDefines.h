@@ -35,7 +35,7 @@
 									                // execution we advise kernel for sequential
 									                // accesses
 
-#define TERA_CARD_SIZE			 9   // This is the size of each card in
+#define TERA_CARD_SIZE			 10   // This is the size of each card in
                                   // TeraCache card table. The size is in bit
                                   // e.g 9 = 512bytes
 
