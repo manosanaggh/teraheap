@@ -53,13 +53,19 @@
                                   // Scavenge single threaded version
                                   // MajorGC
 
-//#define TERA_PSLOCAL_PUSH              // Enable PSLocal way of forwarding objects to H2
+#define TERA_PSLOCAL_PUSH             // Enable PSLocal-push way of forwarding objects to H2
 
-//#define TERA_PSLOCAL_PUSH_DEBUG        // Enable debugging for the PSLocal mechanism
+//#define TERA_PSLOCAL_PUSH_DEBUG       // Enable debugging for the H2 PSLocal-push mechanism
 
-#define TERA_PSLOCAL_POP
+//#define TERA_PSLOCAL_POP              // Enable PSLocal-pop way of forwarding objects to H2
 
-//#define TERA_PSLOCAL_POP_DEBUG
+//#define TERA_PSLOCAL_POP_DEBUG        // Enable debugging for the H2 PSLocal-pop mechanism
+
+//#define TERA_CNT_DIRTY_CARDS_512      // Enable H2 count-dirty-cards mechanism wuth card segment size 512B
+
+#define TERA_CNT_DIRTY_CARDS_1024     // Enable H2 count-dirty-cards mechanism with card segment size 1024B
+
+//#define TERA_CNT_DIRTY_CARDS_DEBUG    // Enable debugging for the H2 count-dirty-cards mechanism
 
 //#define TEST_CLONE                // Clone objects
 

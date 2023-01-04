@@ -775,6 +775,10 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 	assert((HeapWord*)align_size_up  ((uintptr_t)end,   HeapWordSize) == end,   "Unaligned end"  );
 	jbyte* cur  = byte_for(start);
 	jbyte* last = byte_after(end);
+  
+  #ifdef TERA_CNT_DIRTY_CARDS_DEBUG
+    fprintf(stderr, "th_num_dirty_cards START\n");
+  #endif
 
 	int num_dirty_card = 0;
 	int num_clean_card = 0;
@@ -801,7 +805,11 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 
 		cnt_cards++;
 
+#if defined(TERA_CNT_DIRTY_CARDS_512)
+    if(cnt_cards == 8){
+#elif defined(TERA_CNT_DIRTY_CARDS_1024)
     if(cnt_cards == 4){
+#endif
 			uint32_t *cards_stats = (uint32_t*)calloc(4, sizeof(uint32_t));
 			cards_stats[0] = num_dirty_card; 
       cards_stats[1] = num_youngen_card;
@@ -820,7 +828,15 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 
 	static uint32_t cnt_dirty = 0;
 
-	static double *dirty_diff = (double*)calloc(5, sizeof(double));
+#if defined(TERA_CNT_DIRTY_CARDS_512)
+  static double dirty_diff[9] = {0, 0, 0, 0, 0, 0 ,0 ,0 ,0};
+#elif defined(TERA_CNT_DIRTY_CARDS_1024)
+  static double dirty_diff[5] = {0, 0, 0, 0, 0};
+#endif
+
+  #ifdef TERA_CNT_DIRTY_CARDS_DEBUG
+    fprintf(stderr, "b4 while 2\n");
+  #endif
 
 	while(!page_cards_stats.is_empty()){
 		get_stats = page_cards_stats.pop(); 
@@ -841,7 +857,8 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
       case 4:
         (dirty_diff[4])++;
 				break;
-      /*case 5:
+#ifdef TERA_CNT_DIRTY_CARDS_512
+      case 5:
         (dirty_diff[5])++;
 				break;
       case 6:
@@ -852,19 +869,32 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
 				break;
       case 8:
         (dirty_diff[8])++;
-				break;*/
+				break;
+#endif
 			default:
+        #ifdef TERA_CNT_DIRTY_CARDS_DEBUG  
+          fprintf(stderr, "EXIT_FAILURE\n");
+        #endif
         exit(EXIT_FAILURE);
 		}
 
 		if(get_stats[0] > 0)
 			cnt_dirty++;
 		page_cnt++;
+
+    free(get_stats);
 	}
 
-	uint32_t i;
-
-	for(i = 1; i < 5; i++){
+  #ifdef TERA_CNT_DIRTY_CARDS_DEBUG
+    fprintf(stderr, "after while 2\n");
+  #endif
+  
+  uint32_t i;
+#if defined(TERA_CNT_DIRTY_CARDS_512)
+	for(i = 1; i < 9; i++){
+#elif defined(TERA_CNT_DIRTY_CARDS_1024)
+  for(i = 1; i < 5; i++){ 
+#endif
 		thlog_or_tty->print_cr("Percent of pages with %u dirty cards: %2f\tNumber of dirty pages: %u\tNumber of all pages: %u",
 				i,
 				dirty_diff[i] / cnt_dirty,
@@ -872,9 +902,13 @@ void CardTableModRefBS::th_num_dirty_cards(HeapWord *start, HeapWord* end, bool 
         page_cnt);
     thlog_or_tty->flush();
 	}
-
+  
   // After minor gc the number of dirty cards should be zero
   DEBUG_ONLY(if (!before) { assert(num_dirty_card == 0, "Dirty cards exists after minor gc");});
+  
+  #ifdef TERA_CNT_DIRTY_CARDS_DEBUG
+    fprintf(stderr, "th_num_dirty_cards END\n");
+  #endif
 }
 #endif
 
