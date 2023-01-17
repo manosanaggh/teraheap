@@ -45,7 +45,7 @@ CC = gcc
 BINFLAG = -c
 DEBUGFLAG = -g
 OFLAG = -o
-WALLFLAG = -Wall -Werror -pedantic
+WALLFLAG = -Wall -pedantic
 OPTIMZEFLAG = -O3
 AIOFLAG = -lrt
 

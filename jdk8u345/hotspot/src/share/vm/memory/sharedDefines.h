@@ -35,7 +35,7 @@
 									                // execution we advise kernel for sequential
 									                // accesses
 
-#define TERA_CARD_SIZE			 10   // This is the size of each card in
+#define TERA_CARD_SIZE			 13   // This is the size of each card in
                                   // TeraCache card table. The size is in bit
                                   // e.g 9 = 512bytes
 
@@ -53,7 +53,7 @@
                                   // Scavenge single threaded version
                                   // MajorGC
 
-#define TERA_PSLOCAL_PUSH             // Enable PSLocal-push way of forwarding objects to H2
+//#define TERA_PSLOCAL_PUSH             // Enable PSLocal-push way of forwarding objects to H2
 
 //#define TERA_PSLOCAL_PUSH_DEBUG       // Enable debugging for the H2 PSLocal-push mechanism
 
@@ -79,6 +79,8 @@
                                   // with fastmap with enabled
                                   // -XX:AllocateHeapAt="/mnt/dir"
                                   // or -XX:AllocateOldGenAt="/mnt/dir"
+
+#define H2_DYNAMIC_FILE_ALLOCATION // Enable dynamic file allocation for H2
 
 /**********************************
  * Write Mode to H2
