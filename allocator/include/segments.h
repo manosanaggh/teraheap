@@ -48,10 +48,10 @@ struct region{
     char *last_allocated_start;
     char *first_allocated_start;
     struct group *dependency_list;
-//#if ANONYMOUS
+#if ANONYMOUS
   struct offset *offset_list;
   size_t size_mapped; 
-//#endif
+#endif
 #if PR_BUFFER
     struct pr_buffer *pr_buffer;
 #endif

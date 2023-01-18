@@ -89,7 +89,7 @@ void init_regions(){
  */
 void init_regions(){
     region_array=(struct region*) malloc(region_array_size* sizeof(struct region));
-    id_array=(struct region**) malloc(( max_rdd_id)* sizeof(struct region*));
+    id_array=(struct region**) malloc(( MAX_PARTITIONS * max_rdd_id)* sizeof(struct region*));
     uint64_t i;
     region_enabled = -1;
     offset_list = NULL;
@@ -108,8 +108,10 @@ fprintf(stderr, "Total num of regions:%lu\n", region_array_size);
         region_array[i].last_allocated_start = NULL;
         region_array[i].first_allocated_start = NULL;
         region_array[i].dependency_list = NULL;
+  #if ANONYMOUS
         region_array[i].size_mapped = 0;
         region_array[i].offset_list = NULL;
+  #endif
         region_array[i].rdd_id = MAX_PARTITIONS * max_rdd_id;
         region_array[i].part_id = MAX_PARTITIONS * max_rdd_id;
 #if PR_BUFFER
@@ -121,10 +123,10 @@ fprintf(stderr, "Total num of regions:%lu\n", region_array_size);
 #endif
     }
     for (i = 0 ; i < (MAX_PARTITIONS*max_rdd_id) ; i++){
-          id_array[i] = (struct region*) malloc(sizeof(struct region));
+          //id_array[i] = (struct region*) malloc(sizeof(struct region));
           id_array[i]=NULL;
     }
-
+  #if ANONYMOUS
     struct offset *prev = NULL;
     for (i = 0 ; i < dev_size / MMAP_SIZE ; i++){
         struct offset *ptr = malloc(sizeof(struct offset));
@@ -137,6 +139,7 @@ fprintf(stderr, "Total num of regions:%lu\n", region_array_size);
         }
         prev = ptr;
     }
+  #endif
 }
 #endif
 

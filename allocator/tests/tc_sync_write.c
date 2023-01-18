@@ -39,7 +39,7 @@ int main() {
 #ifndef H2_DYNAMIC_FILE_ALLOCATION
 	init(CARD_SIZE * PAGE_SIZE);
 #else
-	init(CARD_SIZE * PAGE_SIZE,"/mnt/fmap/file.txt",21474836480);
+	init(CARD_SIZE * PAGE_SIZE,"/mnt/fmap/file.txt",161061273600);
 #endif
 
 	tmp = malloc(SIZE_80B * sizeof(char));

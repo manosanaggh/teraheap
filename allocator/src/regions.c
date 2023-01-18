@@ -81,8 +81,9 @@ void init(uint64_t align,const char* l_dev, uint64_t l_dev_size) {
 
 	dev_size = l_dev_size;
 	region_array_size = ((dev_size) / (REGION_SIZE));
+  assertf(region_array_size >= MAX_PARTITIONS, "Device size should be larger, because region_array_size is calculated to be smaller than MAX_PARTITIONS!");
 	max_rdd_id = ((region_array_size) / (MAX_PARTITIONS));
-	group_array_size = ((region_array_size) / 2);
+	group_array_size = ((region_array_size) / 2); //deprecated
 
 #if ANONYMOUS
 	// Anonymous mmap
