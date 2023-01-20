@@ -178,23 +178,29 @@ int32_t get_cont_regions(int32_t cont_regions){
  * Returns the start of cont_regions empty regions
  */
 unsigned int get_cont_regions(unsigned int cont_regions){
-    unsigned int i;
-    unsigned int j;
+  static int32_t i = 0;
+  int32_t j, index, end_index = i;
 
-    for(i = 0 ; i < region_array_size ; i++ ) {
-        for (j = i ; j < (i + cont_regions); j++) {
-            if (region_array[i % region_array_size].last_allocated_end == 
-				                                region_array[i % region_array_size].start_address)
-                continue;
-            else 
-                break;
-        }
-        if (j == (i + cont_regions))
-            return i;
-        else
-            i = j;
+  for(; i < (region_array_size + end_index); i++) {
+    for (j = i ; j < (i + cont_regions); j++) {
+      if (region_array[j % (int32_t) region_array_size].last_allocated_end == 
+          region_array[j % (int32_t) region_array_size].start_address) 
+        continue;
+      else
+        break;
     }
-    return -1;
+
+    // Find region
+    if (((j - 1) % (int32_t) region_array_size) == ((i % (int32_t) region_array_size) + cont_regions -1 )) {
+      index = i;
+      i = j % (int32_t) region_array_size;
+      return index;
+    }
+    else
+      i = j;
+  }
+
+  return -1;
 }
 #endif
 
@@ -221,7 +227,6 @@ char* new_region(size_t size){
     assertf(region_array[i].used == 0, "Error, write to an already used region");
     mark_used(region_array[i].start_address);
     references(region_array[cur_region].start_address, region_array[i].start_address);
-    //references(region_array[i].start_address, region_array[cur_region].start_address);
     region_array[i].last_allocated_start = region_array[cur_region].start_address;
     region_array[i].first_allocated_start = region_array[cur_region].start_address;
     region_array[i].last_allocated_end = region_array[cur_region].start_address + size;
