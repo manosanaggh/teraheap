@@ -70,6 +70,13 @@ void MarkSweep::follow_stack() {
     while (!_marking_stack.is_empty()) {
       oop obj = _marking_stack.pop();
       assert (obj->is_gc_marked(), "p must be marked");
+
+#ifdef P_PRIMITIVE
+      if (EnableTeraHeap) {
+        Universe::teraHeap()->reset_obj_ref_field_flag();
+      }
+#endif
+
       obj->follow_contents();
       #ifdef TERA_PSLOCAL_POP 
         // Check if the object needs to be moved in TeraCache based on the
@@ -89,6 +96,12 @@ void MarkSweep::follow_stack() {
           obj->forward_to(oop(h2_obj_addr));
         }
       #endif
+
+#ifdef P_PRIMITIVE
+      if (EnableTeraHeap) {
+        Universe::teraHeap()->set_obj_primitive_state(obj);
+      }
+#endif
     }
     // Process ObjArrays one at a time to avoid marking stack bloat.
     if (!_objarray_stack.is_empty()) {

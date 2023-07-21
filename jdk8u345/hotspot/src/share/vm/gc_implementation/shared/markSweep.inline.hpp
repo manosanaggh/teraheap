@@ -135,6 +135,11 @@ template <class T> inline void MarkSweep::tera_back_ref_mark_and_push(T* p) {
 template <class T> inline void MarkSweep::tera_mark_and_push(T* p) {
   T heap_oop = oopDesc::load_heap_oop(p);
 
+#ifdef P_PRIMITIVE
+    if (EnableTeraHeap)
+      Universe::teraHeap()->set_obj_ref_field_flag();
+#endif
+
   if (!oopDesc::is_null(heap_oop)) {
     oop obj = oopDesc::decode_heap_oop_not_null(heap_oop);
 
@@ -226,6 +231,10 @@ template <class T> inline void MarkSweep::h2_liveness_analysis(T* p) {
 
 template <class T> inline void MarkSweep::mark_and_push(T* p) {
   T heap_oop = oopDesc::load_heap_oop(p);
+#ifdef P_PRIMITIVE
+    if (EnableTeraHeap)
+      Universe::teraHeap()->set_obj_ref_field_flag();
+#endif
   if (!oopDesc::is_null(heap_oop)) {
     oop obj = oopDesc::decode_heap_oop_not_null(heap_oop);
 
